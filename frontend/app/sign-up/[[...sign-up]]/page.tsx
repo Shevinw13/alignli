@@ -1,0 +1,40 @@
+"use client";
+
+import { SignUp } from "@clerk/nextjs";
+
+export default function SignUpPage() {
+  return (
+    <main className="flex min-h-screen items-center justify-center bg-secondary-bg px-4">
+      <div className="w-full max-w-md">
+        <div className="mb-8 text-center">
+          <h1 className="text-h1 font-bold text-navy">
+            Create your account
+          </h1>
+          <p className="mt-2 text-body text-text-secondary">
+            Get started with Alignli and set up your organization
+          </p>
+        </div>
+        <SignUp
+          appearance={{
+            elements: {
+              rootBox: "w-full",
+              card: "shadow-md rounded-xl border border-border-default bg-white",
+              headerTitle: "font-sans font-semibold text-navy",
+              headerSubtitle: "font-sans text-text-secondary",
+              formButtonPrimary:
+                "bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-md",
+              formFieldInput:
+                "border-border-default rounded-md font-sans focus:ring-2 focus:ring-indigo-600",
+              footerActionLink: "text-indigo-600 hover:text-indigo-700 font-medium",
+            },
+          }}
+          fallbackRedirectUrl="/org-setup"
+          signInUrl="/sign-in"
+          unsafeMetadata={{
+            needsOrgSetup: true,
+          }}
+        />
+      </div>
+    </main>
+  );
+}
