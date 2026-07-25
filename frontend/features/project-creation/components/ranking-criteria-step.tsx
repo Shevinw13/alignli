@@ -45,13 +45,13 @@ const MAX_CRITERIA = 12;
 const priorityStyles: Record<Priority, string> = {
   Low: "bg-gray-100 text-gray-700 border-gray-300",
   Medium: "bg-amber-50 text-amber-700 border-amber-300",
-  High: "bg-indigo-50 text-indigo-700 border-indigo-300",
+  High: "bg-[#e6f7fc] text-[#0099CC] border-[#b3e0f0]",
 };
 
 const prioritySelectedStyles: Record<Priority, string> = {
   Low: "bg-gray-200 text-gray-900 border-gray-500 ring-1 ring-gray-400",
   Medium: "bg-amber-100 text-amber-900 border-amber-500 ring-1 ring-amber-400",
-  High: "bg-indigo-100 text-indigo-900 border-indigo-500 ring-1 ring-indigo-400",
+  High: "bg-[#e6f7fc] text-[#006680] border-[#0099CC] ring-1 ring-[#0099CC]/40",
 };
 
 const categoryColors: Record<CriteriaCategory, string> = {
@@ -164,7 +164,7 @@ function CriterionCard({
                 onClick={() => onPriorityChange(criterion.id, p)}
                 className={cn(
                   "rounded-md border px-2.5 py-1 text-xs font-medium transition-colors",
-                  "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600",
+                  "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0099CC]",
                   criterion.priority === p
                     ? prioritySelectedStyles[p]
                     : priorityStyles[p]
@@ -207,7 +207,6 @@ function InlineAddForm({ onAdd, onCancel }: InlineAddFormProps) {
   const [category, setCategory] = useState<CriteriaCategory>("Custom");
   const [label, setLabel] = useState("");
   const [priority, setPriority] = useState<Priority>("Medium");
-  const [maxScore, setMaxScore] = useState(50);
   const [formError, setFormError] = useState<string | null>(null);
 
   const handleSubmit = () => {
@@ -217,19 +216,15 @@ function InlineAddForm({ onAdd, onCancel }: InlineAddFormProps) {
       return;
     }
     setFormError(null);
+    // Default maxScore based on priority: High=100, Medium=80, Low=60
+    const maxScore = priority === "High" ? 100 : priority === "Medium" ? 80 : 60;
     onAdd({ category, label: trimmedLabel, priority, maxScore });
-  };
-
-  const handleScoreChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = parseInt(e.target.value, 10);
-    if (Number.isNaN(value)) return;
-    setMaxScore(Math.max(1, Math.min(100, value)));
   };
 
   return (
     <div
       className={cn(
-        "rounded-[16px] border-2 border-indigo-200 bg-indigo-50/30 p-4 space-y-4"
+        "rounded-[16px] border-2 border-[#b3e0f0] bg-[#f0fafb]/50 p-4 space-y-4"
       )}
       role="form"
       aria-label="Add custom criterion form"
@@ -244,7 +239,7 @@ function InlineAddForm({ onAdd, onCancel }: InlineAddFormProps) {
           className={cn(
             "rounded-md p-1.5 text-gray-400 transition-colors",
             "hover:bg-gray-100 hover:text-gray-600",
-            "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+            "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0099CC]"
           )}
           aria-label="Cancel adding criterion"
         >
@@ -268,7 +263,7 @@ function InlineAddForm({ onAdd, onCancel }: InlineAddFormProps) {
             onChange={(e) => setCategory(e.target.value as CriteriaCategory)}
             className={cn(
               "h-9 w-full rounded-md border border-border bg-white px-2 text-sm text-foreground",
-              "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+              "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0099CC]"
             )}
           >
             {CATEGORIES.map((cat) => (
@@ -299,13 +294,13 @@ function InlineAddForm({ onAdd, onCancel }: InlineAddFormProps) {
             className={cn(
               "h-9 w-full rounded-md border bg-white px-2 text-sm text-foreground",
               formError ? "border-red-300" : "border-border",
-              "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+              "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0099CC]"
             )}
           />
         </div>
       </div>
 
-      {/* Priority + Max Score row */}
+      {/* Priority row */}
       <div className="flex flex-wrap items-end gap-4">
         {/* Priority selector */}
         <div className="space-y-1">
@@ -321,7 +316,7 @@ function InlineAddForm({ onAdd, onCancel }: InlineAddFormProps) {
                 onClick={() => setPriority(p)}
                 className={cn(
                   "rounded-md border px-2.5 py-1 text-xs font-medium transition-colors",
-                  "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600",
+                  "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0099CC]",
                   priority === p ? prioritySelectedStyles[p] : priorityStyles[p]
                 )}
                 aria-pressed={priority === p}
@@ -331,28 +326,6 @@ function InlineAddForm({ onAdd, onCancel }: InlineAddFormProps) {
               </button>
             ))}
           </fieldset>
-        </div>
-
-        {/* Max score input */}
-        <div className="space-y-1">
-          <label
-            htmlFor="add-criterion-max-score"
-            className="text-xs font-medium text-muted-foreground"
-          >
-            Max Score
-          </label>
-          <input
-            id="add-criterion-max-score"
-            type="number"
-            min={1}
-            max={100}
-            value={maxScore}
-            onChange={handleScoreChange}
-            className={cn(
-              "h-9 w-16 rounded-md border border-border bg-white px-2 text-sm text-foreground",
-              "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
-            )}
-          />
         </div>
       </div>
 
@@ -521,8 +494,8 @@ export function RankingCriteriaStep({
             "flex w-full items-center justify-center gap-2 rounded-[16px]",
             "border-2 border-dashed border-border bg-white py-4",
             "text-sm font-medium text-muted-foreground",
-            "transition-colors hover:border-indigo-300 hover:text-indigo-600",
-            "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600",
+            "transition-colors hover:border-[#0099CC]/40 hover:text-[#0099CC]",
+            "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0099CC]",
             "disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:border-border disabled:hover:text-muted-foreground"
           )}
           aria-label="Add custom criterion"

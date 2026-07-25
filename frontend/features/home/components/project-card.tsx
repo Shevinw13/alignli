@@ -28,16 +28,21 @@ export function ProjectCard({
   candidateCount,
   topMatchesCount,
 }: ProjectCardProps) {
+  const hasStats = candidateCount > 0 || topMatchesCount > 0;
+
   return (
-    <div
+    <Link
+      href={`/projects/${id}`}
       className={cn(
-        "rounded-[16px] border border-border bg-white p-4",
-        "hover-elevate"
+        "group block rounded-[16px] border border-border bg-white p-5",
+        "hover-elevate focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0099CC]"
       )}
     >
-      <div className="flex items-start justify-between gap-4">
+      <div className="flex items-start justify-between gap-3">
         <div className="min-w-0 flex-1">
-          <h3 className="truncate text-base font-semibold text-navy">{title}</h3>
+          <h3 className="truncate text-base font-semibold text-navy group-hover:text-[#0099CC] transition-colors">
+            {title}
+          </h3>
           <span
             className={cn(
               "mt-2 inline-block rounded-full px-2.5 py-0.5 text-xs font-medium",
@@ -47,36 +52,23 @@ export function ProjectCard({
             {status}
           </span>
         </div>
+        <ArrowRight className="h-4 w-4 shrink-0 text-gray-300 group-hover:text-[#0099CC] transition-colors mt-1" aria-hidden="true" />
       </div>
 
-      <div className="mt-4 flex items-center gap-4 text-sm text-muted-foreground">
-        <span className="flex items-center gap-1.5">
-          <Users className="h-4 w-4" aria-hidden="true" />
-          <span>
-            {candidateCount} {candidateCount === 1 ? "candidate" : "candidates"}
+      {hasStats && (
+        <div className="mt-4 flex items-center gap-4 border-t border-border pt-3 text-sm text-muted-foreground">
+          <span className="flex items-center gap-1.5">
+            <Users className="h-3.5 w-3.5" aria-hidden="true" />
+            <span>{candidateCount}</span>
           </span>
-        </span>
-        <span className="flex items-center gap-1.5 text-emerald-600">
-          <Star className="h-4 w-4" aria-hidden="true" />
-          <span>
-            {topMatchesCount} top {topMatchesCount === 1 ? "match" : "matches"}
-          </span>
-        </span>
-      </div>
-
-      <div className="mt-4 border-t border-border pt-4">
-        <Link
-          href={`/projects/${id}`}
-          className={cn(
-            "inline-flex items-center gap-1 text-sm font-medium",
-            "text-indigo-600 hover:text-indigo-700",
-            "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+          {topMatchesCount > 0 && (
+            <span className="flex items-center gap-1.5 text-emerald-600">
+              <Star className="h-3.5 w-3.5" aria-hidden="true" />
+              <span>{topMatchesCount} top</span>
+            </span>
           )}
-        >
-          View project
-          <ArrowRight className="h-4 w-4" aria-hidden="true" />
-        </Link>
-      </div>
-    </div>
+        </div>
+      )}
+    </Link>
   );
 }

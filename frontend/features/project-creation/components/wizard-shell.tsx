@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { Check, ChevronLeft, ChevronRight, Save, X } from "lucide-react";
+import { Check, ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { useWizardContext } from "../wizard-context";
@@ -28,8 +28,6 @@ export function WizardShell({ currentStep, children, onNext }: WizardShellProps)
   const {
     previousStep,
     nextStep,
-    saveDraft,
-    isDirty,
     completedSteps,
     validateStep,
     isFirstStep,
@@ -52,21 +50,15 @@ export function WizardShell({ currentStep, children, onNext }: WizardShellProps)
 
   function handleConfirmCancel() {
     setCancelDialogOpen(false);
-    router.push("/projects");
-  }
-
-  function handleSaveDraftAndLeave() {
-    saveDraft();
-    setCancelDialogOpen(false);
-    router.push("/projects");
+    router.push("/");
   }
 
   return (
     <div className="flex min-h-[calc(100vh-6rem)] flex-col">
       <div className="flex-1 space-y-8 pb-24">
         <div>
-          <h1 className="text-2xl font-bold text-navy">New Hiring Project</h1>
-          <p className="mt-1 text-sm text-muted-foreground">
+          <h1 className="text-xl font-bold text-navy">New Project</h1>
+          <p className="mt-0.5 text-xs text-muted-foreground">
             Step {currentStep} of {STEPS.length}
           </p>
         </div>
@@ -85,27 +77,27 @@ export function WizardShell({ currentStep, children, onNext }: WizardShellProps)
                   <div className="flex items-center gap-2">
                     <div
                       className={cn(
-                        "flex h-8 w-8 items-center justify-center rounded-full text-sm font-semibold transition-colors",
-                        isCompleted && "bg-indigo-600 text-white",
+                        "flex h-7 w-7 items-center justify-center rounded-full text-xs font-semibold transition-colors",
+                        isCompleted && "bg-[#0099CC] text-white",
                         isCurrent &&
-                          "border-2 border-indigo-600 bg-indigo-50 text-indigo-600",
+                          "border-2 border-[#0099CC] bg-[#e6f7fc] text-[#0099CC]",
                         isRemaining &&
-                          "border-2 border-border-default bg-white text-muted-foreground"
+                          "border-2 border-gray-200 bg-white text-gray-400"
                       )}
                       aria-current={isCurrent ? "step" : undefined}
                     >
                       {isCompleted ? (
-                        <Check className="h-4 w-4" aria-hidden="true" />
+                        <Check className="h-3.5 w-3.5" aria-hidden="true" />
                       ) : (
                         step.number
                       )}
                     </div>
                     <span
                       className={cn(
-                        "hidden text-sm font-medium sm:inline",
-                        isCompleted && "text-indigo-600",
-                        isCurrent && "text-indigo-600 font-semibold",
-                        isRemaining && "text-muted-foreground"
+                        "hidden text-xs font-medium sm:inline",
+                        isCompleted && "text-[#0099CC]",
+                        isCurrent && "text-[#0099CC] font-semibold",
+                        isRemaining && "text-gray-400"
                       )}
                     >
                       {step.label}
@@ -116,8 +108,8 @@ export function WizardShell({ currentStep, children, onNext }: WizardShellProps)
                   {index < STEPS.length - 1 && (
                     <div
                       className={cn(
-                        "hidden h-0.5 w-6 sm:block md:w-10",
-                        isCompleted ? "bg-indigo-600" : "bg-border-default"
+                        "hidden h-0.5 w-4 sm:block md:w-8",
+                        isCompleted ? "bg-[#0099CC]" : "bg-gray-200"
                       )}
                       aria-hidden="true"
                     />
@@ -146,29 +138,27 @@ export function WizardShell({ currentStep, children, onNext }: WizardShellProps)
             onClick={handleCancel}
             className="text-muted-foreground hover:text-foreground"
           >
-            <X className="h-4 w-4" data-icon="inline-start" />
             Cancel
           </Button>
 
           {/* Right: Navigation buttons */}
           <div className="flex items-center gap-3">
-            <Button variant="outline" onClick={saveDraft} disabled={!isDirty}>
-              <Save className="h-4 w-4" data-icon="inline-start" />
-              Save Draft
-            </Button>
-
-            <Button
-              variant="outline"
-              onClick={previousStep}
-              disabled={isFirstStep}
-            >
-              <ChevronLeft className="h-4 w-4" data-icon="inline-start" />
-              Previous
-            </Button>
+            {!isFirstStep && (
+              <Button
+                variant="outline"
+                onClick={previousStep}
+              >
+                <ChevronLeft className="h-4 w-4" data-icon="inline-start" />
+                Back
+              </Button>
+            )}
 
             {!isLastStep && (
-              <Button onClick={handleNext}>
-                Next
+              <Button
+                onClick={handleNext}
+                className="bg-[#0099CC] text-white hover:bg-[#007aa3] px-5"
+              >
+                Continue
                 <ChevronRight className="h-4 w-4" data-icon="inline-end" />
               </Button>
             )}
@@ -180,14 +170,12 @@ export function WizardShell({ currentStep, children, onNext }: WizardShellProps)
       <ConfirmDialog
         open={cancelDialogOpen}
         onOpenChange={setCancelDialogOpen}
-        title="Leave wizard?"
-        description="You have unsaved changes. If you leave now, your progress will be lost."
-        confirmLabel="Discard & Leave"
+        title="Leave this project?"
+        description="Your progress won't be saved. You can always start a new project later."
+        confirmLabel="Leave"
         cancelLabel="Stay"
         variant="destructive"
         onConfirm={handleConfirmCancel}
-        alternativeLabel="Save Draft & Leave"
-        onAlternative={handleSaveDraftAndLeave}
       />
     </div>
   );
