@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowRight, Users, Star, Calendar } from "lucide-react";
+import { ArrowRight, Users, Star, Calendar, Upload, FileText } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export interface ProjectCardProps {
@@ -13,13 +13,19 @@ export interface ProjectCardProps {
   updatedAt?: string;
 }
 
-const statusConfig: Record<string, { bg: string; text: string; accent: string }> = {
-  Draft: { bg: "bg-gray-50", text: "text-gray-600", accent: "bg-gray-400" },
-  "In Progress": { bg: "bg-sky-50", text: "text-sky-700", accent: "bg-sky-500" },
-  Active: { bg: "bg-emerald-50", text: "text-emerald-700", accent: "bg-emerald-500" },
-  Reviewing: { bg: "bg-amber-50", text: "text-amber-700", accent: "bg-amber-500" },
-  Interviewing: { bg: "bg-blue-50", text: "text-blue-700", accent: "bg-blue-500" },
-  "Offer Extended": { bg: "bg-purple-50", text: "text-purple-700", accent: "bg-purple-500" },
+const statusConfig: Record<string, { bg: string; text: string; accent: string; dot: string }> = {
+  Draft: { bg: "bg-gray-50", text: "text-gray-600", accent: "from-gray-300 to-gray-400", dot: "bg-gray-400" },
+  "In Progress": { bg: "bg-sky-50", text: "text-sky-700", accent: "from-sky-400 to-sky-500", dot: "bg-sky-500" },
+  Active: { bg: "bg-emerald-50", text: "text-emerald-700", accent: "from-emerald-400 to-emerald-500", dot: "bg-emerald-500" },
+  Reviewing: { bg: "bg-amber-50", text: "text-amber-700", accent: "from-amber-400 to-amber-500", dot: "bg-amber-500" },
+  Interviewing: { bg: "bg-blue-50", text: "text-blue-700", accent: "from-blue-400 to-blue-500", dot: "bg-blue-500" },
+  "Offer Extended": { bg: "bg-purple-50", text: "text-purple-700", accent: "from-purple-400 to-purple-500", dot: "bg-purple-500" },
+};
+
+// Contextual next-action hints based on project state
+const nextActionHint: Record<string, { icon: typeof Upload; text: string }> = {
+  Draft: { icon: Upload, text: "Upload resumes to get started" },
+  Active: { icon: FileText, text: "Review candidates for this role" },
 };
 
 function formatRelativeDate(dateStr?: string): string {
@@ -47,32 +53,33 @@ export function ProjectCard({
 }: ProjectCardProps) {
   const hasStats = candidateCount > 0 || topMatchesCount > 0;
   const config = statusConfig[status] ?? statusConfig.Draft;
+  const hint = !hasStats ? nextActionHint[status] : null;
 
   return (
     <Link
       href={`/projects/${id}`}
       className={cn(
         "group relative block overflow-hidden rounded-[16px] border border-border bg-white",
-        "hover-elevate focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0099CC]"
+        "shadow-sm hover:shadow-md transition-shadow duration-200",
+        "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0099CC]"
       )}
     >
-      {/* Colored top accent bar */}
-      <div className={cn("h-1 w-full", config.accent)} />
+      {/* Gradient top accent bar — thicker for visibility */}
+      <div className={cn("h-1.5 w-full bg-gradient-to-r", config.accent)} />
 
       <div className="p-5">
+        {/* Header row */}
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0 flex-1">
             <h3 className="truncate text-[15px] font-semibold text-navy group-hover:text-[#0099CC] transition-colors">
               {title}
             </h3>
-            <div className="mt-2 flex items-center gap-2">
-              <span
-                className={cn(
-                  "inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium",
-                  config.bg, config.text
-                )}
-              >
-                {status}
+            <div className="mt-2.5 flex items-center gap-3">
+              <span className="flex items-center gap-1.5">
+                <span className={cn("h-2 w-2 rounded-full", config.dot)} />
+                <span className={cn("text-xs font-medium", config.text)}>
+                  {status}
+                </span>
               </span>
               {updatedAt && (
                 <span className="flex items-center gap-1 text-[11px] text-gray-400">
@@ -87,6 +94,7 @@ export function ProjectCard({
           </div>
         </div>
 
+        {/* Stats row (when candidates exist) */}
         {hasStats && (
           <div className="mt-4 flex items-center gap-4 border-t border-gray-100 pt-3 text-xs text-muted-foreground">
             <span className="flex items-center gap-1.5">
@@ -99,6 +107,14 @@ export function ProjectCard({
                 <span>{topMatchesCount} top matches</span>
               </span>
             )}
+          </div>
+        )}
+
+        {/* Next action hint (when no candidates yet) */}
+        {hint && (
+          <div className="mt-4 flex items-center gap-2 rounded-lg bg-[#f0fafb] px-3 py-2">
+            <hint.icon className="h-3.5 w-3.5 text-[#0099CC]" aria-hidden="true" />
+            <span className="text-xs text-[#006680]">{hint.text}</span>
           </div>
         )}
       </div>

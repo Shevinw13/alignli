@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Plus, Sparkles, TrendingUp, Clock } from "lucide-react";
+import { Plus, FileText, Users, Sparkles, CheckCircle2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { ProjectCard } from "@/features/home/components/project-card";
@@ -33,6 +33,7 @@ export default function HomePage() {
     );
 
   const hasProjects = openProjects.length > 0 || closedProjects.length > 0;
+  const showGettingStarted = openProjects.length > 0 && openProjects.length <= 3;
 
   if (error) {
     return (
@@ -53,56 +54,31 @@ export default function HomePage() {
         {/* Dashboard with projects */}
         {hasProjects && (
           <>
-            {/* Welcome header with gradient accent */}
-            <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-[#0099CC] to-[#007aa3] p-6 md:p-8">
-              <div className="pointer-events-none absolute -right-12 -top-12 h-48 w-48 rounded-full bg-white/10 blur-2xl" />
-              <div className="pointer-events-none absolute -bottom-8 -left-8 h-32 w-32 rounded-full bg-white/5 blur-xl" />
+            {/* Compact header with gradient */}
+            <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-[#0099CC] to-[#00789e] p-5 md:p-6">
+              <div className="pointer-events-none absolute -right-16 -top-16 h-56 w-56 rounded-full bg-white/10 blur-3xl" />
+              <div className="pointer-events-none absolute bottom-0 left-1/3 h-24 w-24 rounded-full bg-white/5 blur-2xl" />
 
-              <div className="relative flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+              <div className="relative flex items-center justify-between gap-4">
                 <div>
-                  <h1 className="text-xl font-bold text-white">
-                    Your Hiring Projects
+                  <h1 className="text-lg font-bold text-white">
+                    Hiring Projects
                   </h1>
-                  <p className="mt-1 text-sm text-white/80">
-                    {openProjects.length} active · {closedProjects.length} completed
+                  <p className="mt-0.5 text-sm text-white/70">
+                    {openProjects.length} active{closedProjects.length > 0 ? ` · ${closedProjects.length} completed` : ""}
                   </p>
                 </div>
                 <Button
                   className={cn(
-                    "inline-flex items-center gap-1.5 self-start sm:self-auto",
+                    "inline-flex items-center gap-1.5",
                     "bg-white text-[#0099CC] hover:bg-white/90",
-                    "rounded-[10px] px-4 py-2 text-sm font-semibold shadow-sm"
+                    "rounded-[10px] px-4 py-2.5 text-sm font-semibold shadow-sm"
                   )}
                   render={<Link href="/projects/new" />}
                 >
                   <Plus className="h-4 w-4" aria-hidden="true" />
                   New Project
                 </Button>
-              </div>
-
-              {/* Quick stats row */}
-              <div className="relative mt-6 grid grid-cols-3 gap-4">
-                <div className="rounded-xl bg-white/10 backdrop-blur-sm px-4 py-3">
-                  <div className="flex items-center gap-2">
-                    <TrendingUp className="h-4 w-4 text-white/70" aria-hidden="true" />
-                    <span className="text-xs font-medium text-white/70">Active</span>
-                  </div>
-                  <p className="mt-1 text-2xl font-bold text-white">{openProjects.length}</p>
-                </div>
-                <div className="rounded-xl bg-white/10 backdrop-blur-sm px-4 py-3">
-                  <div className="flex items-center gap-2">
-                    <Sparkles className="h-4 w-4 text-white/70" aria-hidden="true" />
-                    <span className="text-xs font-medium text-white/70">Candidates</span>
-                  </div>
-                  <p className="mt-1 text-2xl font-bold text-white">—</p>
-                </div>
-                <div className="rounded-xl bg-white/10 backdrop-blur-sm px-4 py-3">
-                  <div className="flex items-center gap-2">
-                    <Clock className="h-4 w-4 text-white/70" aria-hidden="true" />
-                    <span className="text-xs font-medium text-white/70">Filled</span>
-                  </div>
-                  <p className="mt-1 text-2xl font-bold text-white">{closedProjects.length}</p>
-                </div>
               </div>
             </div>
 
@@ -137,6 +113,38 @@ export default function HomePage() {
               </section>
             )}
 
+            {/* Getting Started tips — shown when user is new (≤3 projects) */}
+            {showGettingStarted && (
+              <section className="rounded-xl border border-[#d4eef2] bg-gradient-to-br from-[#f0fafb] to-white p-5 md:p-6">
+                <h3 className="text-sm font-semibold text-navy">How BTS works</h3>
+                <p className="mt-1 text-xs text-muted-foreground">Complete these steps to find your best candidates</p>
+
+                <div className="mt-4 grid gap-3 sm:grid-cols-3">
+                  <GettingStartedStep
+                    number={1}
+                    title="Define your role"
+                    description="Add title, requirements, and paste your job description"
+                    icon={FileText}
+                    done={openProjects.length > 0}
+                  />
+                  <GettingStartedStep
+                    number={2}
+                    title="Upload candidates"
+                    description="Upload PDFs, paste text, or add LinkedIn profiles"
+                    icon={Users}
+                    done={false}
+                  />
+                  <GettingStartedStep
+                    number={3}
+                    title="Get ranked results"
+                    description="AI scores and ranks every candidate against your criteria"
+                    icon={Sparkles}
+                    done={false}
+                  />
+                </div>
+              </section>
+            )}
+
             {/* Closed projects section */}
             {closedProjects.length > 0 && (
               <section aria-labelledby="closed-projects-heading">
@@ -163,5 +171,50 @@ export default function HomePage() {
         )}
       </div>
     </LoadingWrapper>
+  );
+}
+
+// ─── Getting Started Step ────────────────────────────────────────────────────
+
+function GettingStartedStep({
+  number,
+  title,
+  description,
+  icon: Icon,
+  done,
+}: {
+  number: number;
+  title: string;
+  description: string;
+  icon: typeof FileText;
+  done: boolean;
+}) {
+  return (
+    <div className={cn(
+      "flex gap-3 rounded-lg p-3 transition-colors",
+      done ? "bg-white" : "bg-white"
+    )}>
+      <div className={cn(
+        "flex h-8 w-8 shrink-0 items-center justify-center rounded-lg",
+        done ? "bg-emerald-50" : "bg-[#e6f7fc]"
+      )}>
+        {done ? (
+          <CheckCircle2 className="h-4 w-4 text-emerald-500" aria-hidden="true" />
+        ) : (
+          <Icon className="h-4 w-4 text-[#0099CC]" aria-hidden="true" />
+        )}
+      </div>
+      <div className="min-w-0">
+        <p className={cn(
+          "text-sm font-medium",
+          done ? "text-emerald-700 line-through" : "text-navy"
+        )}>
+          {title}
+        </p>
+        <p className="mt-0.5 text-[11px] leading-relaxed text-gray-500">
+          {description}
+        </p>
+      </div>
+    </div>
   );
 }
