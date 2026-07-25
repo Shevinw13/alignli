@@ -40,10 +40,10 @@ class HiringProject(Base, TimestampMixin, SoftDeleteMixin):
     location: Mapped[str] = mapped_column(String(100), nullable=False)
     employment_type: Mapped[str] = mapped_column(String(20), nullable=False)
     remote_preference: Mapped[str] = mapped_column(String(20), nullable=False)
-    assigned_manager_id: Mapped[uuid.UUID] = mapped_column(
+    assigned_manager_id: Mapped[Optional[uuid.UUID]] = mapped_column(
         UUID(as_uuid=True),
         ForeignKey("users.id"),
-        nullable=False,
+        nullable=True,
     )
     job_description_raw: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     job_description_extracted: Mapped[Optional[dict]] = mapped_column(JSONB, nullable=True)
@@ -61,7 +61,7 @@ class HiringProject(Base, TimestampMixin, SoftDeleteMixin):
     organization: Mapped["Organization"] = relationship(  # noqa: F821
         back_populates="hiring_projects"
     )
-    assigned_manager: Mapped["User"] = relationship(  # noqa: F821
+    assigned_manager: Mapped[Optional["User"]] = relationship(  # noqa: F821
         back_populates="managed_projects"
     )
     ranking_criteria: Mapped[list["RankingCriteria"]] = relationship(  # noqa: F821

@@ -1,11 +1,11 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Button } from "@/components/ui/button";
 import { CharacterCounter } from "@/components/ui/character-counter";
 import { AISuggestionCard } from "@/components/shared/ai-suggestion-card";
 import { useAutoFocus } from "@/lib/hooks/use-auto-focus";
 import { cn } from "@/lib/utils";
+import { ChevronDown, ChevronRight } from "lucide-react";
 
 const EMPLOYMENT_TYPES = [
   "Full-time",
@@ -46,8 +46,6 @@ interface FieldErrors {
   title?: string;
   location?: string;
   employmentType?: string;
-  remotePreference?: string;
-  assignedManager?: string;
   minYearsExperience?: string;
   clientCompany?: string;
   commissionType?: string;
@@ -63,7 +61,6 @@ const MOCK_PREVIOUS_PROJECTS = [
 function getSmartDefaults(): { employmentType: EmploymentType; remotePreference: RemotePreference } | null {
   if (MOCK_PREVIOUS_PROJECTS.length === 0) return null;
 
-  // Find the most common employment type and remote preference from previous projects
   const typeCounts: Record<string, number> = {};
   const remoteCounts: Record<string, number> = {};
 
@@ -99,6 +96,7 @@ export function BasicInfoStep({ initialData, onSubmit }: BasicInfoStepProps) {
   );
   const [errors, setErrors] = useState<FieldErrors>({});
   const [showSuggestion, setShowSuggestion] = useState(false);
+  const [showAdvanced, setShowAdvanced] = useState(false);
   const smartDefaults = getSmartDefaults();
 
   // Show smart default suggestion if previous projects exist and fields are empty
@@ -137,14 +135,6 @@ export function BasicInfoStep({ initialData, onSubmit }: BasicInfoStepProps) {
       newErrors.employmentType = "Employment type is required";
     }
 
-    if (!formData.remotePreference) {
-      newErrors.remotePreference = "Remote preference is required";
-    }
-
-    if (!formData.assignedManager.trim()) {
-      newErrors.assignedManager = "Assigned Hiring Manager is required";
-    }
-
     if (!formData.minYearsExperience.trim()) {
       newErrors.minYearsExperience = "Minimum years of experience is required";
     } else {
@@ -162,7 +152,7 @@ export function BasicInfoStep({ initialData, onSubmit }: BasicInfoStepProps) {
   }
 
   function validateField(field: keyof BasicInfoData): void {
-    const fieldValidators: Record<keyof BasicInfoData, () => string | undefined> = {
+    const fieldValidators: Partial<Record<keyof BasicInfoData, () => string | undefined>> = {
       title: () => {
         if (!formData.title.trim()) return "Title is required";
         if (formData.title.length > 100) return "Title must be 100 characters or less";
@@ -177,14 +167,6 @@ export function BasicInfoStep({ initialData, onSubmit }: BasicInfoStepProps) {
         if (!formData.employmentType) return "Employment type is required";
         return undefined;
       },
-      remotePreference: () => {
-        if (!formData.remotePreference) return "Remote preference is required";
-        return undefined;
-      },
-      assignedManager: () => {
-        if (!formData.assignedManager.trim()) return "Assigned Hiring Manager is required";
-        return undefined;
-      },
       minYearsExperience: () => {
         if (!formData.minYearsExperience.trim()) return "Minimum years of experience is required";
         const years = parseInt(formData.minYearsExperience, 10);
@@ -195,17 +177,18 @@ export function BasicInfoStep({ initialData, onSubmit }: BasicInfoStepProps) {
         if (formData.isAgency && !formData.clientCompany.trim()) return "Client company is required for agency roles";
         return undefined;
       },
-      commissionType: () => undefined,
-      commissionValue: () => undefined,
     };
 
-    const error = fieldValidators[field]();
+    const validator = fieldValidators[field];
+    if (!validator) return;
+
+    const error = validator();
     setErrors((prev) => {
       const next = { ...prev };
       if (error) {
-        next[field] = error;
+        (next as Record<string, string>)[field] = error;
       } else {
-        delete next[field];
+        delete (next as Record<string, string | undefined>)[field];
       }
       return next;
     });
@@ -258,6 +241,8 @@ export function BasicInfoStep({ initialData, onSubmit }: BasicInfoStepProps) {
           onDismiss={() => setShowSuggestion(false)}
         />
       )}
+
+      {/* ─── Required Fields (always visible) ─── */}
 
       {/* Title */}
       <FormField
@@ -351,73 +336,9 @@ export function BasicInfoStep({ initialData, onSubmit }: BasicInfoStepProps) {
         </select>
       </FormField>
 
-      {/* Remote Preference */}
-      <FormField
-        label="Remote Preference"
-        htmlFor="remotePreference"
-        error={errors.remotePreference}
-        required
-      >
-        <select
-          id="remotePreference"
-          value={formData.remotePreference}
-          onChange={(e) => handleChange("remotePreference", e.target.value)}
-          onBlur={() => validateField("remotePreference")}
-          className={cn(
-            "w-full rounded-[12px] border px-4 py-2.5 text-sm text-navy outline-none transition-colors appearance-none bg-white",
-            "focus:border-indigo-600 focus:ring-2 focus:ring-indigo-600/20",
-            errors.remotePreference
-              ? "border-red-500"
-              : "border-border-default",
-            !formData.remotePreference && "text-muted-foreground"
-          )}
-          aria-invalid={!!errors.remotePreference}
-          aria-describedby={
-            errors.remotePreference ? "remotePreference-error" : undefined
-          }
-        >
-          <option value="" disabled>
-            Select remote preference
-          </option>
-          {REMOTE_PREFERENCES.map((pref) => (
-            <option key={pref} value={pref}>
-              {pref}
-            </option>
-          ))}
-        </select>
-      </FormField>
-
-      {/* Assigned Manager */}
-      <FormField
-        label="Assigned Hiring Manager"
-        htmlFor="assignedManager"
-        error={errors.assignedManager}
-        required
-      >
-        <input
-          id="assignedManager"
-          type="text"
-          value={formData.assignedManager}
-          onChange={(e) => handleChange("assignedManager", e.target.value)}
-          onBlur={() => validateField("assignedManager")}
-          placeholder="e.g., Jane Smith"
-          className={cn(
-            "w-full rounded-[12px] border px-4 py-2.5 text-sm text-navy placeholder:text-muted-foreground outline-none transition-colors",
-            "focus:border-indigo-600 focus:ring-2 focus:ring-indigo-600/20",
-            errors.assignedManager
-              ? "border-red-500"
-              : "border-border-default"
-          )}
-          aria-invalid={!!errors.assignedManager}
-          aria-describedby={
-            errors.assignedManager ? "assignedManager-error" : undefined
-          }
-        />
-      </FormField>
-
       {/* Minimum Years of Experience */}
       <FormField
-        label="Minimum Years of Relevant Experience"
+        label="Minimum Years of Experience"
         htmlFor="minYearsExperience"
         error={errors.minYearsExperience}
         required
@@ -448,146 +369,214 @@ export function BasicInfoStep({ initialData, onSubmit }: BasicInfoStepProps) {
         </p>
       </FormField>
 
-      {/* Salary Range */}
-      <div className="space-y-1.5">
-        <label className="block text-sm font-medium text-navy">
-          Salary Range
-        </label>
-        <div className="grid grid-cols-[80px_1fr_auto_1fr] items-center gap-2">
-          <select
-            value={formData.salaryCurrency}
-            onChange={(e) => handleChange("salaryCurrency", e.target.value)}
-            className={cn(
-              "rounded-[12px] border px-2 py-2.5 text-sm text-navy outline-none transition-colors appearance-none bg-white",
-              "focus:border-indigo-600 focus:ring-2 focus:ring-indigo-600/20",
-              "border-border-default"
-            )}
-          >
-            <option value="USD">USD</option>
-            <option value="EUR">EUR</option>
-            <option value="GBP">GBP</option>
-            <option value="CAD">CAD</option>
-            <option value="AUD">AUD</option>
-          </select>
-          <input
-            type="number"
-            min={0}
-            value={formData.salaryMin}
-            onChange={(e) => handleChange("salaryMin", e.target.value)}
-            placeholder="Min (e.g., 80000)"
-            className={cn(
-              "w-full rounded-[12px] border px-4 py-2.5 text-sm text-navy placeholder:text-muted-foreground outline-none transition-colors",
-              "focus:border-indigo-600 focus:ring-2 focus:ring-indigo-600/20",
-              "border-border-default"
-            )}
-          />
-          <span className="text-sm text-muted-foreground">to</span>
-          <input
-            type="number"
-            min={0}
-            value={formData.salaryMax}
-            onChange={(e) => handleChange("salaryMax", e.target.value)}
-            placeholder="Max (e.g., 120000)"
-            className={cn(
-              "w-full rounded-[12px] border px-4 py-2.5 text-sm text-navy placeholder:text-muted-foreground outline-none transition-colors",
-              "focus:border-indigo-600 focus:ring-2 focus:ring-indigo-600/20",
-              "border-border-default"
-            )}
-          />
-        </div>
-        <p className="text-xs text-muted-foreground">
-          Optional. Used for budget tracking and commission calculations.
-        </p>
-      </div>
+      {/* ─── Advanced Options (collapsed by default) ─── */}
+      <div className="border-t border-border pt-4">
+        <button
+          type="button"
+          onClick={() => setShowAdvanced((prev) => !prev)}
+          className="flex items-center gap-1.5 text-sm font-medium text-indigo-600 hover:text-indigo-700 transition-colors"
+          aria-expanded={showAdvanced}
+          aria-controls="advanced-options"
+        >
+          {showAdvanced ? (
+            <ChevronDown className="h-4 w-4" />
+          ) : (
+            <ChevronRight className="h-4 w-4" />
+          )}
+          {showAdvanced ? "Hide advanced options" : "Show advanced options"}
+        </button>
 
-      {/* Agency toggle + fields */}
-      <div className="space-y-4 rounded-[12px] border border-border p-4">
-        <label className="flex items-center gap-3 cursor-pointer">
-          <input
-            type="checkbox"
-            checked={formData.isAgency}
-            onChange={(e) => handleChange("isAgency", e.target.checked)}
-            className="h-4 w-4 rounded border-border text-indigo-600 focus:ring-indigo-600"
-          />
-          <div>
-            <span className="text-sm font-medium text-navy">
-              Recruiting for a client company
-            </span>
-            <p className="text-xs text-muted-foreground">
-              Enable if you're an agency or external recruiter filling this role for another company.
-            </p>
-          </div>
-        </label>
-
-        {formData.isAgency && (
-          <div className="space-y-4 pl-7">
-            {/* Client Company */}
+        {showAdvanced && (
+          <div id="advanced-options" className="mt-4 space-y-6">
+            {/* Remote Preference */}
             <FormField
-              label="Client Company"
-              htmlFor="clientCompany"
-              error={errors.clientCompany}
-              required
+              label="Remote Preference"
+              htmlFor="remotePreference"
+            >
+              <select
+                id="remotePreference"
+                value={formData.remotePreference}
+                onChange={(e) => handleChange("remotePreference", e.target.value)}
+                className={cn(
+                  "w-full rounded-[12px] border px-4 py-2.5 text-sm text-navy outline-none transition-colors appearance-none bg-white",
+                  "focus:border-indigo-600 focus:ring-2 focus:ring-indigo-600/20",
+                  "border-border-default",
+                  !formData.remotePreference && "text-muted-foreground"
+                )}
+              >
+                <option value="" disabled>
+                  Select remote preference
+                </option>
+                {REMOTE_PREFERENCES.map((pref) => (
+                  <option key={pref} value={pref}>
+                    {pref}
+                  </option>
+                ))}
+              </select>
+            </FormField>
+
+            {/* Assigned Manager */}
+            <FormField
+              label="Assigned Hiring Manager"
+              htmlFor="assignedManager"
             >
               <input
-                id="clientCompany"
+                id="assignedManager"
                 type="text"
-                value={formData.clientCompany}
-                onChange={(e) => handleChange("clientCompany", e.target.value)}
-                onBlur={() => validateField("clientCompany")}
-                placeholder="e.g., Acme Corp"
+                value={formData.assignedManager}
+                onChange={(e) => handleChange("assignedManager", e.target.value)}
+                placeholder="e.g., Jane Smith"
                 className={cn(
                   "w-full rounded-[12px] border px-4 py-2.5 text-sm text-navy placeholder:text-muted-foreground outline-none transition-colors",
                   "focus:border-indigo-600 focus:ring-2 focus:ring-indigo-600/20",
-                  errors.clientCompany ? "border-red-500" : "border-border-default"
+                  "border-border-default"
                 )}
-                aria-invalid={!!errors.clientCompany}
               />
             </FormField>
 
-            {/* Commission */}
-            <div className="grid grid-cols-2 gap-3">
-              <FormField
-                label="Commission Type"
-                htmlFor="commissionType"
-                error={errors.commissionType}
-              >
+            {/* Salary Range */}
+            <div className="space-y-1.5">
+              <label className="block text-sm font-medium text-navy">
+                Salary Range
+              </label>
+              <div className="grid grid-cols-[80px_1fr_auto_1fr] items-center gap-2">
                 <select
-                  id="commissionType"
-                  value={formData.commissionType}
-                  onChange={(e) => handleChange("commissionType", e.target.value)}
+                  value={formData.salaryCurrency}
+                  onChange={(e) => handleChange("salaryCurrency", e.target.value)}
                   className={cn(
-                    "w-full rounded-[12px] border px-4 py-2.5 text-sm text-navy outline-none transition-colors appearance-none bg-white",
+                    "rounded-[12px] border px-2 py-2.5 text-sm text-navy outline-none transition-colors appearance-none bg-white",
                     "focus:border-indigo-600 focus:ring-2 focus:ring-indigo-600/20",
-                    "border-border-default",
-                    !formData.commissionType && "text-muted-foreground"
+                    "border-border-default"
                   )}
                 >
-                  <option value="">None</option>
-                  <option value="percentage">Percentage of salary</option>
-                  <option value="flat">Flat fee</option>
+                  <option value="USD">USD</option>
+                  <option value="EUR">EUR</option>
+                  <option value="GBP">GBP</option>
+                  <option value="CAD">CAD</option>
+                  <option value="AUD">AUD</option>
                 </select>
-              </FormField>
+                <input
+                  type="number"
+                  min={0}
+                  value={formData.salaryMin}
+                  onChange={(e) => handleChange("salaryMin", e.target.value)}
+                  placeholder="Min (e.g., 80000)"
+                  className={cn(
+                    "w-full rounded-[12px] border px-4 py-2.5 text-sm text-navy placeholder:text-muted-foreground outline-none transition-colors",
+                    "focus:border-indigo-600 focus:ring-2 focus:ring-indigo-600/20",
+                    "border-border-default"
+                  )}
+                />
+                <span className="text-sm text-muted-foreground">to</span>
+                <input
+                  type="number"
+                  min={0}
+                  value={formData.salaryMax}
+                  onChange={(e) => handleChange("salaryMax", e.target.value)}
+                  placeholder="Max (e.g., 120000)"
+                  className={cn(
+                    "w-full rounded-[12px] border px-4 py-2.5 text-sm text-navy placeholder:text-muted-foreground outline-none transition-colors",
+                    "focus:border-indigo-600 focus:ring-2 focus:ring-indigo-600/20",
+                    "border-border-default"
+                  )}
+                />
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Optional. Used for budget tracking and commission calculations.
+              </p>
+            </div>
 
-              {formData.commissionType && (
-                <FormField
-                  label={formData.commissionType === "percentage" ? "Commission %" : "Fee Amount ($)"}
-                  htmlFor="commissionValue"
-                  error={errors.commissionValue}
-                >
-                  <input
-                    id="commissionValue"
-                    type="number"
-                    min={0}
-                    value={formData.commissionValue}
-                    onChange={(e) => handleChange("commissionValue", e.target.value)}
-                    placeholder={formData.commissionType === "percentage" ? "e.g., 20" : "e.g., 15000"}
-                    className={cn(
-                      "w-full rounded-[12px] border px-4 py-2.5 text-sm text-navy placeholder:text-muted-foreground outline-none transition-colors",
-                      "focus:border-indigo-600 focus:ring-2 focus:ring-indigo-600/20",
-                      "border-border-default"
+            {/* Agency toggle + fields */}
+            <div className="space-y-4 rounded-[12px] border border-border p-4">
+              <label className="flex items-center gap-3 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={formData.isAgency}
+                  onChange={(e) => handleChange("isAgency", e.target.checked)}
+                  className="h-4 w-4 rounded border-border text-indigo-600 focus:ring-indigo-600"
+                />
+                <div>
+                  <span className="text-sm font-medium text-navy">
+                    Recruiting for a client company
+                  </span>
+                  <p className="text-xs text-muted-foreground">
+                    Enable if you're an agency or external recruiter filling this role for another company.
+                  </p>
+                </div>
+              </label>
+
+              {formData.isAgency && (
+                <div className="space-y-4 pl-7">
+                  {/* Client Company */}
+                  <FormField
+                    label="Client Company"
+                    htmlFor="clientCompany"
+                    error={errors.clientCompany}
+                    required
+                  >
+                    <input
+                      id="clientCompany"
+                      type="text"
+                      value={formData.clientCompany}
+                      onChange={(e) => handleChange("clientCompany", e.target.value)}
+                      onBlur={() => validateField("clientCompany")}
+                      placeholder="e.g., Acme Corp"
+                      className={cn(
+                        "w-full rounded-[12px] border px-4 py-2.5 text-sm text-navy placeholder:text-muted-foreground outline-none transition-colors",
+                        "focus:border-indigo-600 focus:ring-2 focus:ring-indigo-600/20",
+                        errors.clientCompany ? "border-red-500" : "border-border-default"
+                      )}
+                      aria-invalid={!!errors.clientCompany}
+                    />
+                  </FormField>
+
+                  {/* Commission */}
+                  <div className="grid grid-cols-2 gap-3">
+                    <FormField
+                      label="Commission Type"
+                      htmlFor="commissionType"
+                      error={errors.commissionType}
+                    >
+                      <select
+                        id="commissionType"
+                        value={formData.commissionType}
+                        onChange={(e) => handleChange("commissionType", e.target.value)}
+                        className={cn(
+                          "w-full rounded-[12px] border px-4 py-2.5 text-sm text-navy outline-none transition-colors appearance-none bg-white",
+                          "focus:border-indigo-600 focus:ring-2 focus:ring-indigo-600/20",
+                          "border-border-default",
+                          !formData.commissionType && "text-muted-foreground"
+                        )}
+                      >
+                        <option value="">None</option>
+                        <option value="percentage">Percentage of salary</option>
+                        <option value="flat">Flat fee</option>
+                      </select>
+                    </FormField>
+
+                    {formData.commissionType && (
+                      <FormField
+                        label={formData.commissionType === "percentage" ? "Commission %" : "Fee Amount ($)"}
+                        htmlFor="commissionValue"
+                        error={errors.commissionValue}
+                      >
+                        <input
+                          id="commissionValue"
+                          type="number"
+                          min={0}
+                          value={formData.commissionValue}
+                          onChange={(e) => handleChange("commissionValue", e.target.value)}
+                          placeholder={formData.commissionType === "percentage" ? "e.g., 20" : "e.g., 15000"}
+                          className={cn(
+                            "w-full rounded-[12px] border px-4 py-2.5 text-sm text-navy placeholder:text-muted-foreground outline-none transition-colors",
+                            "focus:border-indigo-600 focus:ring-2 focus:ring-indigo-600/20",
+                            "border-border-default"
+                          )}
+                        />
+                      </FormField>
                     )}
-                  />
-                </FormField>
+                  </div>
+                </div>
               )}
             </div>
           </div>

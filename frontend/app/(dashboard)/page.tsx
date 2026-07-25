@@ -47,16 +47,9 @@ export default function HomePage() {
   return (
     <LoadingWrapper isLoading={isLoading} skeleton={<HomePageSkeleton />}>
       <div className="space-y-8">
-        {/* Page header */}
-        <div className="flex items-center justify-between gap-4">
-          <div>
-            <h1 className="text-2xl font-bold text-navy">Hiring Projects</h1>
-            <p className="mt-1 text-sm text-muted-foreground">
-              Manage your open and closed hiring projects.
-            </p>
-          </div>
-
-          {hasProjects && (
+        {/* Action bar */}
+        {hasProjects && (
+          <div className="flex items-center justify-end">
             <Button
               className={cn(
                 "inline-flex items-center gap-1.5",
@@ -68,8 +61,8 @@ export default function HomePage() {
               <Plus className="h-4 w-4" aria-hidden="true" />
               New Hiring Project
             </Button>
-          )}
-        </div>
+          </div>
+        )}
 
         {/* Empty state */}
         {!hasProjects && <EmptyState />}

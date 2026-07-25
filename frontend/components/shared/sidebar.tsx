@@ -5,7 +5,6 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { FolderKanban, Settings, User, Menu, X, ChevronsLeft, ChevronsRight } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { NotificationCenter } from "./notification-center";
 
 interface NavItem {
   label: string;
@@ -114,7 +113,7 @@ export function Sidebar() {
             )}
             aria-label="BTS home"
           >
-            <img src="/logo.jpeg" alt="BTS" className="h-9 w-9 shrink-0 rounded-lg" />
+            <img src="/logo.jpeg" alt="BTS" width={36} height={36} className="h-9 w-9 shrink-0 rounded-lg" />
             {!collapsed && (
               <div className="flex flex-col">
                 <span className="text-sm font-bold text-[#0f1623] leading-tight">
@@ -126,7 +125,6 @@ export function Sidebar() {
               </div>
             )}
           </Link>
-          {!collapsed && <NotificationCenter />}
         </div>
 
         {/* Divider */}

@@ -47,6 +47,12 @@ async def create_project(
     The project is created in Draft state and scoped to the
     authenticated user's organization.
     """
+    # Set org context for dev mode (org_scope middleware not active in dev)
+    from app.core.database.session import get_current_org_id, set_current_org_id
+
+    if not get_current_org_id() and user.org_id:
+        set_current_org_id(user.org_id)
+
     project = await service.create_project(data)
     return ProjectResponse.model_validate(project)
 
@@ -63,6 +69,12 @@ async def list_projects(
     Results are paginated and sorted by most recently updated first.
     Only non-deleted projects in the user's organization are returned.
     """
+    # Set org context for dev mode (org_scope middleware not active in dev)
+    from app.core.database.session import get_current_org_id, set_current_org_id
+
+    if not get_current_org_id() and user.org_id:
+        set_current_org_id(user.org_id)
+
     result = await service.list_projects(page=page, page_size=page_size)
     return ProjectListResponse(
         items=[ProjectResponse.model_validate(p) for p in result.items],

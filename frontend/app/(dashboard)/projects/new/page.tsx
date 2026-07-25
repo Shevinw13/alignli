@@ -17,6 +17,7 @@ import {
 import { ResumeUploadStep } from "@/features/project-creation/components/resume-upload-step";
 import { ProcessingStep } from "@/features/project-creation/components/processing-step";
 import { WizardProvider, useWizardContext } from "@/features/project-creation/wizard-context";
+import { createProject, type CreateProjectRequest } from "@/lib/services/projects";
 
 export default function NewProjectPage() {
   return (
@@ -42,7 +43,6 @@ function NewProjectWizard() {
     // Pull step 1 data to include in criteria
     const basicInfo = wizardData.basicInfo;
     const minYears = basicInfo?.minYearsExperience ? parseInt(basicInfo.minYearsExperience, 10) : null;
-    const jobLocation = basicInfo?.location || "";
 
     // Criteria from Basic Info (step 1)
     const step1Criteria: RankingCriterion[] = [];
@@ -57,7 +57,7 @@ function NewProjectWizard() {
       });
     }
 
-    // Generic criteria (keep it to 3 — leave room for custom)
+    // Generic criteria (keep it to 2 — leave room for custom)
     const genericCriteria: RankingCriterion[] = [
       { id: "gen-2", category: "Education", label: "Educational background", priority: "Low", maxScore: 100 },
       { id: "gen-3", category: "Leadership", label: "Communication & collaboration skills", priority: "Medium", maxScore: 100 },
@@ -103,12 +103,11 @@ function NewProjectWizard() {
       });
     }
 
-    // Combine: step 1 criteria + role-specific from JD + generic
-    const combined = [...step1Criteria, ...roleCriteria, ...genericCriteria];
+    // Combine: step 1 criteria + role-specific from JD + generic (max 12 total)
+    const combined = [...step1Criteria, ...roleCriteria, ...genericCriteria].slice(0, 12);
 
     setGeneratedCriteria(combined);
     setStepData("rankingCriteria", combined);
-    // Don't call nextStep() here — let the user review extracted items and click Next when ready
   }
 
   function handleCriteriaConfirm(criteria: RankingCriterion[]) {
@@ -116,8 +115,31 @@ function NewProjectWizard() {
     nextStep();
   }
 
-  function handleResumesContinue(files: File[]) {
+  async function handleResumesContinue(files: File[]) {
     setStepData("resumeUpload", files);
+
+    // Create the project in the backend before moving to processing
+    const basicInfo = wizardData.basicInfo;
+    if (!basicInfo) {
+      nextStep();
+      return;
+    }
+
+    try {
+      const payload: CreateProjectRequest = {
+        title: basicInfo.title,
+        location: basicInfo.location,
+        employment_type: basicInfo.employmentType as CreateProjectRequest["employment_type"],
+        remote_preference: (basicInfo.remotePreference || "Remote") as "Remote" | "Hybrid" | "On-site",
+      };
+
+      const response = await createProject(payload);
+      setProjectId(response.data.id);
+    } catch (err: unknown) {
+      // If backend fails, still proceed — processing will simulate
+      console.error("Failed to create project:", err);
+    }
+
     nextStep();
   }
 

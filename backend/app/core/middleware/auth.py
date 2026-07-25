@@ -153,7 +153,7 @@ async def get_current_user(
     if settings.app_env == "development" and not settings.clerk_secret_key:
         return AuthenticatedUser(
             user_id="dev-user",
-            org_id="dev-org",
+            org_id="00000000-0000-0000-0000-000000000001",
             role="Owner",
         )
 

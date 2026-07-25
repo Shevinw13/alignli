@@ -14,6 +14,9 @@ export const metadata: Metadata = {
   title: "BTS - BrightWell Talent Solutions",
   description:
     "AI-powered hiring copilot that helps hiring managers decide who deserves an interview.",
+  icons: {
+    icon: "/logo.jpeg",
+  },
 };
 
 export default function RootLayout({

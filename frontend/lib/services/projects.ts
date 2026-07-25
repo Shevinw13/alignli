@@ -14,7 +14,7 @@ export interface Project {
   location: string;
   employment_type: string;
   remote_preference: string;
-  assigned_manager_id: string;
+  assigned_manager_id: string | null;
   state: string;
   created_at: string;
   updated_at: string;
@@ -34,8 +34,8 @@ export interface CreateProjectRequest {
   title: string;
   location: string;
   employment_type: "Full-time" | "Part-time" | "Contract" | "Temporary";
-  remote_preference: "Remote" | "Hybrid" | "On-site";
-  assigned_manager_id: string;
+  remote_preference?: "Remote" | "Hybrid" | "On-site";
+  assigned_manager_id?: string;
 }
 
 export interface StateTransitionRequest {

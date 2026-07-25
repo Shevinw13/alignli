@@ -10,6 +10,7 @@ from __future__ import annotations
 import uuid
 from datetime import datetime
 from enum import Enum
+from typing import Optional
 
 from pydantic import BaseModel, Field
 
@@ -36,8 +37,10 @@ class RemotePreference(str, Enum):
 class ProjectCreateRequest(SanitizedBaseModel):
     """Request schema for creating a new hiring project.
 
-    All fields are required. Inputs are automatically sanitized
-    (HTML stripped, whitespace trimmed) by SanitizedBaseModel.
+    Required fields: title, location, employment_type.
+    Optional fields default to sensible values.
+    Inputs are automatically sanitized (HTML stripped, whitespace trimmed)
+    by SanitizedBaseModel.
     """
 
     title: str = Field(
@@ -57,12 +60,12 @@ class ProjectCreateRequest(SanitizedBaseModel):
         description="Employment type: Full-time, Part-time, Contract, or Temporary",
     )
     remote_preference: RemotePreference = Field(
-        ...,
+        default=RemotePreference.REMOTE,
         description="Remote preference: Remote, Hybrid, or On-site",
     )
-    assigned_manager_id: uuid.UUID = Field(
-        ...,
-        description="UUID of the assigned hiring manager",
+    assigned_manager_id: Optional[uuid.UUID] = Field(
+        default=None,
+        description="UUID of the assigned hiring manager (optional, defaults to creator)",
     )
 
 
@@ -75,7 +78,7 @@ class ProjectResponse(BaseModel):
     location: str
     employment_type: str
     remote_preference: str
-    assigned_manager_id: uuid.UUID
+    assigned_manager_id: Optional[uuid.UUID]
     state: str
     created_at: datetime
     updated_at: datetime
