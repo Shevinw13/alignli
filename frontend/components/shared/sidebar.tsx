@@ -96,14 +96,10 @@ export function Sidebar() {
         id="sidebar-nav"
         className={cn(
           "fixed inset-y-0 left-0 z-40 flex flex-col",
-          "border-r border-border bg-white",
-          "shadow-[0_4px_4px_rgba(0,0,0,0.05)]",
+          "bg-[#f0fafb] border-r border-[#d4eef2]",
           "transition-all duration-[var(--duration-normal)] ease-[var(--ease-out)]",
-          // Width: collapsed vs expanded
           collapsed ? "w-16" : "w-56",
-          // Mobile: hidden by default, shown when open
           mobileOpen ? "translate-x-0" : "-translate-x-full",
-          // Desktop: always visible
           "lg:translate-x-0"
         )}
         aria-label="Main navigation"
@@ -113,23 +109,31 @@ export function Sidebar() {
           <Link
             href="/"
             className={cn(
-              "flex items-center gap-2 interactive",
+              "flex items-center gap-2.5 interactive",
               collapsed && "justify-center"
             )}
             aria-label="BTS home"
           >
-            <img src="/logo.jpeg" alt="BTS" className="h-8 w-8 shrink-0 rounded-[4px]" />
+            <img src="/logo.jpeg" alt="BTS" className="h-9 w-9 shrink-0 rounded-lg" />
             {!collapsed && (
-              <span className="text-lg font-bold text-navy">
-                BTS
-              </span>
+              <div className="flex flex-col">
+                <span className="text-sm font-bold text-[#0f1623] leading-tight">
+                  BrightWell
+                </span>
+                <span className="text-[10px] font-medium text-[#0099CC] uppercase tracking-wider">
+                  Talent Solutions
+                </span>
+              </div>
             )}
           </Link>
           {!collapsed && <NotificationCenter />}
         </div>
 
+        {/* Divider */}
+        <div className="mx-4 border-t border-[#d4eef2]" />
+
         {/* Navigation */}
-        <nav className="flex-1 px-3 py-3 space-y-0.5" aria-label="Sidebar navigation">
+        <nav className="flex-1 px-3 py-4 space-y-1" aria-label="Sidebar navigation">
           {navItems.map((item) => {
             const isActive =
               item.href === "/"
@@ -141,33 +145,33 @@ export function Sidebar() {
                 key={item.href}
                 href={item.href}
                 className={cn(
-                  "flex items-center gap-2.5 rounded-lg px-3 py-2",
+                  "flex items-center gap-2.5 rounded-lg px-3 py-2.5",
                   "text-sm font-medium interactive",
-                  "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600",
+                  "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0099CC]",
                   isActive
-                    ? "bg-gray-100 text-navy font-semibold"
-                    : "text-gray-600 hover:bg-gray-50 hover:text-navy",
+                    ? "bg-[#0099CC] text-white shadow-sm"
+                    : "text-[#3d5a5e] hover:bg-[#e0f4f7] hover:text-[#006680]",
                   collapsed && "justify-center px-2"
                 )}
                 aria-current={isActive ? "page" : undefined}
                 title={collapsed ? item.label : undefined}
               >
-                <item.icon className={cn("h-[18px] w-[18px] shrink-0", isActive ? "text-navy" : "text-gray-400")} />
+                <item.icon className={cn("h-[18px] w-[18px] shrink-0", isActive ? "text-white" : "text-[#5a9ba3]")} />
                 {!collapsed && <span>{item.label}</span>}
               </Link>
             );
           })}
         </nav>
 
-        {/* Collapse toggle (visible on tablet/desktop) */}
-        <div className="hidden lg:flex items-center justify-center border-t border-border p-3">
+        {/* Collapse toggle */}
+        <div className="hidden lg:flex items-center justify-center border-t border-[#d4eef2] p-3">
           <button
             type="button"
             onClick={toggleCollapsed}
             className={cn(
               "flex h-8 w-8 items-center justify-center rounded-[8px]",
-              "text-muted-foreground interactive hover:bg-indigo-50 hover:text-indigo-600",
-              "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+              "text-[#5a9ba3] interactive hover:bg-[#e0f4f7] hover:text-[#006680]",
+              "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0099CC]"
             )}
             aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
           >
