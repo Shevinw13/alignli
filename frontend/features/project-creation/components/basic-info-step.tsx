@@ -52,27 +52,10 @@ interface FieldErrors {
   commissionValue?: string;
 }
 
-// Mock: simulate that previous projects exist to enable smart defaults
-const MOCK_PREVIOUS_PROJECTS = [
-  { title: "Senior Backend Engineer", employmentType: "Full-time" as const, remotePreference: "Remote" as const },
-  { title: "Product Manager", employmentType: "Full-time" as const, remotePreference: "Hybrid" as const },
-];
-
+// Smart defaults: disabled until real project history is available from API.
+// Will use `useProjects()` hook data when ready.
 function getSmartDefaults(): { employmentType: EmploymentType; remotePreference: RemotePreference } | null {
-  if (MOCK_PREVIOUS_PROJECTS.length === 0) return null;
-
-  const typeCounts: Record<string, number> = {};
-  const remoteCounts: Record<string, number> = {};
-
-  for (const project of MOCK_PREVIOUS_PROJECTS) {
-    typeCounts[project.employmentType] = (typeCounts[project.employmentType] || 0) + 1;
-    remoteCounts[project.remotePreference] = (remoteCounts[project.remotePreference] || 0) + 1;
-  }
-
-  const topType = Object.entries(typeCounts).sort((a, b) => b[1] - a[1])[0]?.[0] as EmploymentType;
-  const topRemote = Object.entries(remoteCounts).sort((a, b) => b[1] - a[1])[0]?.[0] as RemotePreference;
-
-  return { employmentType: topType, remotePreference: topRemote };
+  return null;
 }
 
 export function BasicInfoStep({ initialData, onSubmit }: BasicInfoStepProps) {
