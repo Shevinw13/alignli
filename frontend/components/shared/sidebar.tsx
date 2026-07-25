@@ -3,7 +3,7 @@
 import { useState, useCallback, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { FolderKanban, Settings, User, Menu, X } from "lucide-react";
+import { FolderKanban, Settings, User, Menu, X, ChevronsLeft, ChevronsRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { NotificationCenter } from "./notification-center";
 
@@ -22,9 +22,14 @@ const navItems: NavItem[] = [
 export function Sidebar() {
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [collapsed, setCollapsed] = useState(false);
 
   const toggleMobile = useCallback(() => {
     setMobileOpen((prev) => !prev);
+  }, []);
+
+  const toggleCollapsed = useCallback(() => {
+    setCollapsed((prev) => !prev);
   }, []);
 
   // Close mobile sidebar on route change
@@ -42,6 +47,21 @@ export function Sidebar() {
     return () => document.removeEventListener("keydown", handleKeyDown);
   }, [mobileOpen]);
 
+  // Auto-collapse on tablet viewports (768px–1024px)
+  useEffect(() => {
+    const mediaQuery = window.matchMedia("(min-width: 768px) and (max-width: 1024px)");
+
+    function handleMediaChange(e: MediaQueryListEvent | MediaQueryList) {
+      setCollapsed(e.matches);
+    }
+
+    // Set initial state
+    handleMediaChange(mediaQuery);
+
+    mediaQuery.addEventListener("change", handleMediaChange);
+    return () => mediaQuery.removeEventListener("change", handleMediaChange);
+  }, []);
+
   return (
     <>
       {/* Mobile hamburger button */}
@@ -51,7 +71,7 @@ export function Sidebar() {
           "fixed top-4 left-4 z-50 lg:hidden",
           "flex h-10 w-10 items-center justify-center rounded-[12px]",
           "bg-white border border-border shadow-[0_2px_4px_rgba(0,0,0,0.05)]",
-          "text-navy hover:bg-indigo-50",
+          "text-navy interactive hover:bg-indigo-50",
           "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
         )}
         onClick={toggleMobile}
@@ -76,9 +96,11 @@ export function Sidebar() {
         id="sidebar-nav"
         className={cn(
           "fixed inset-y-0 left-0 z-40 flex flex-col",
-          "w-64 border-r border-border bg-white",
+          "border-r border-border bg-white",
           "shadow-[0_4px_4px_rgba(0,0,0,0.05)]",
-          "transition-transform duration-200 ease-in-out",
+          "transition-all duration-[var(--duration-normal)] ease-[var(--ease-out)]",
+          // Width: collapsed vs expanded
+          collapsed ? "w-16" : "w-64",
           // Mobile: hidden by default, shown when open
           mobileOpen ? "translate-x-0" : "-translate-x-full",
           // Desktop: always visible
@@ -87,16 +109,25 @@ export function Sidebar() {
         aria-label="Main navigation"
       >
         {/* Logo */}
-        <div className="flex h-16 items-center justify-between px-6">
-          <Link href="/" className="flex items-center gap-2" aria-label="Alignli home">
+        <div className="flex h-16 items-center justify-between px-4">
+          <Link
+            href="/"
+            className={cn(
+              "flex items-center gap-2 interactive",
+              collapsed && "justify-center"
+            )}
+            aria-label="Alignli home"
+          >
             <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-[8px] bg-indigo-600 text-white font-bold text-sm">
               A
             </div>
-            <span className="text-lg font-bold text-navy">
-              Alignli
-            </span>
+            {!collapsed && (
+              <span className="text-lg font-bold text-navy">
+                Alignli
+              </span>
+            )}
           </Link>
-          <NotificationCenter />
+          {!collapsed && <NotificationCenter />}
         </div>
 
         {/* Navigation */}
@@ -113,20 +144,42 @@ export function Sidebar() {
                 href={item.href}
                 className={cn(
                   "flex items-center gap-3 rounded-[12px] px-3 py-2.5",
-                  "text-sm font-medium transition-colors",
+                  "text-sm font-medium interactive",
                   "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600",
                   isActive
-                    ? "bg-indigo-600 text-white"
-                    : "text-navy hover:bg-indigo-50 hover:text-indigo-600"
+                    ? "bg-[#EEF2FF] text-[#4F46E5]"
+                    : "text-navy hover:bg-indigo-50 hover:text-indigo-600",
+                  collapsed && "justify-center px-2"
                 )}
                 aria-current={isActive ? "page" : undefined}
+                title={collapsed ? item.label : undefined}
               >
                 <item.icon className="h-5 w-5 shrink-0" />
-                <span>{item.label}</span>
+                {!collapsed && <span>{item.label}</span>}
               </Link>
             );
           })}
         </nav>
+
+        {/* Collapse toggle (visible on tablet/desktop) */}
+        <div className="hidden lg:flex items-center justify-center border-t border-border p-3">
+          <button
+            type="button"
+            onClick={toggleCollapsed}
+            className={cn(
+              "flex h-8 w-8 items-center justify-center rounded-[8px]",
+              "text-muted-foreground interactive hover:bg-indigo-50 hover:text-indigo-600",
+              "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+            )}
+            aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+          >
+            {collapsed ? (
+              <ChevronsRight className="h-4 w-4" />
+            ) : (
+              <ChevronsLeft className="h-4 w-4" />
+            )}
+          </button>
+        </div>
       </aside>
     </>
   );

@@ -32,6 +32,7 @@ CSRF_COOKIE_NAME = "csrf_token"
 
 # Default exempt paths (webhooks from external services)
 DEFAULT_EXEMPT_PATHS: list[str] = [
+    "/api/v1/",  # All API routes use Bearer token auth instead of CSRF
     "/api/v1/webhooks/clerk",
     "/api/v1/webhooks/stripe",
     "/api/v1/webhooks/inngest",

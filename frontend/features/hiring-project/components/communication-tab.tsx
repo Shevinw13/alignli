@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { CharacterCounter } from "@/components/ui/character-counter";
+import { useAutoFocus } from "@/lib/hooks/use-auto-focus";
 import { cn } from "@/lib/utils";
 import { Send, Mail, AlertCircle } from "lucide-react";
 
@@ -122,12 +124,42 @@ function ComposeForm({
   onSend: (data: ComposeFormData) => void;
   sendError: string | null;
 }) {
+  const formRef = useAutoFocus<HTMLFormElement>();
   const [formData, setFormData] = useState<ComposeFormData>({
     recipientCandidateId: "",
     subject: "",
     body: "",
   });
   const [errors, setErrors] = useState<FieldErrors>({});
+
+  function validateField(field: keyof ComposeFormData): string | undefined {
+    switch (field) {
+      case "recipientCandidateId":
+        if (!formData.recipientCandidateId) return "Recipient is required";
+        return undefined;
+      case "subject":
+        if (!formData.subject.trim()) return "Subject is required";
+        if (formData.subject.length > 255) return "Subject must be 255 characters or fewer";
+        return undefined;
+      case "body":
+        if (!formData.body.trim()) return "Body is required";
+        if (formData.body.length > 10000) return "Body must be 10,000 characters or fewer";
+        return undefined;
+    }
+  }
+
+  function handleBlur(field: keyof ComposeFormData) {
+    const error = validateField(field);
+    setErrors((prev) => {
+      const next = { ...prev };
+      if (error) {
+        next[field] = error;
+      } else {
+        delete next[field];
+      }
+      return next;
+    });
+  }
 
   function validate(): FieldErrors {
     const newErrors: FieldErrors = {};
@@ -175,8 +207,16 @@ function ComposeForm({
     }
   }
 
+  function handleKeyDown(e: React.KeyboardEvent) {
+    // Enter-to-submit on single-line input (subject field)
+    if (e.key === "Enter" && !e.shiftKey && (e.target as HTMLElement).tagName !== "TEXTAREA") {
+      e.preventDefault();
+      handleSubmit(e as unknown as React.FormEvent);
+    }
+  }
+
   return (
-    <form onSubmit={handleSubmit} noValidate className="space-y-4">
+    <form ref={formRef} onSubmit={handleSubmit} noValidate className="space-y-4" onKeyDown={handleKeyDown}>
       <div className="flex items-center gap-2">
         <Mail className="h-5 w-5 text-indigo-600" aria-hidden="true" />
         <h3 className="text-base font-semibold text-navy">Compose Email</h3>
@@ -203,6 +243,7 @@ function ComposeForm({
           id="recipient"
           value={formData.recipientCandidateId}
           onChange={(e) => handleChange("recipientCandidateId", e.target.value)}
+          onBlur={() => handleBlur("recipientCandidateId")}
           className={cn(
             "w-full rounded-[12px] border px-4 py-2.5 text-sm text-navy outline-none transition-colors appearance-none bg-white",
             "focus:border-indigo-600 focus:ring-2 focus:ring-indigo-600/20",
@@ -238,6 +279,7 @@ function ComposeForm({
           maxLength={255}
           value={formData.subject}
           onChange={(e) => handleChange("subject", e.target.value)}
+          onBlur={() => handleBlur("subject")}
           placeholder="Email subject"
           className={cn(
             "w-full rounded-[12px] border px-4 py-2.5 text-sm text-navy placeholder:text-muted-foreground outline-none transition-colors",
@@ -245,11 +287,9 @@ function ComposeForm({
             errors.subject ? "border-red-500" : "border-border-default"
           )}
           aria-invalid={!!errors.subject}
-          aria-describedby={errors.subject ? "subject-error" : undefined}
+          aria-describedby={errors.subject ? "subject-error" : "subject-counter"}
         />
-        <p className="mt-1 text-xs text-muted-foreground">
-          {formData.subject.length}/255 characters
-        </p>
+        <CharacterCounter current={formData.subject.length} max={255} className="mt-1" />
       </FormField>
 
       {/* Body */}
@@ -265,6 +305,7 @@ function ComposeForm({
           rows={6}
           value={formData.body}
           onChange={(e) => handleChange("body", e.target.value)}
+          onBlur={() => handleBlur("body")}
           placeholder="Write your message..."
           className={cn(
             "w-full resize-y rounded-[12px] border px-4 py-2.5 text-sm text-navy placeholder:text-muted-foreground outline-none transition-colors",
@@ -272,11 +313,9 @@ function ComposeForm({
             errors.body ? "border-red-500" : "border-border-default"
           )}
           aria-invalid={!!errors.body}
-          aria-describedby={errors.body ? "body-error" : undefined}
+          aria-describedby={errors.body ? "body-error" : "body-counter"}
         />
-        <p className="mt-1 text-xs text-muted-foreground">
-          {formData.body.length}/10,000 characters
-        </p>
+        <CharacterCounter current={formData.body.length} max={10000} className="mt-1" />
       </FormField>
 
       {/* Send Button */}

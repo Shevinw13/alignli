@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import { Plus, Trash2, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -40,6 +40,7 @@ export interface RankingCriteriaStepProps {
 // ─── Constants ────────────────────────────────────────────────────────────────
 
 const PRIORITIES: Priority[] = ["Low", "Medium", "High"];
+const MAX_CRITERIA = 12;
 
 const priorityStyles: Record<Priority, string> = {
   Low: "bg-gray-100 text-gray-700 border-gray-300",
@@ -175,29 +176,6 @@ function CriterionCard({
               </button>
             ))}
           </fieldset>
-
-          {/* Max score input */}
-          <div className="flex items-center gap-2">
-            <label
-              htmlFor={`max-score-${criterion.id}`}
-              className="text-xs text-muted-foreground"
-            >
-              Max Score
-            </label>
-            <input
-              id={`max-score-${criterion.id}`}
-              type="number"
-              min={1}
-              max={100}
-              value={criterion.maxScore}
-              onChange={handleScoreChange}
-              className={cn(
-                "h-8 w-16 rounded-md border border-border bg-white px-2 text-sm text-foreground",
-                "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
-              )}
-              aria-label={`Maximum score for ${criterion.label}`}
-            />
-          </div>
         </div>
 
         {/* Remove button */}
@@ -411,21 +389,22 @@ function InlineAddForm({ onAdd, onCancel }: InlineAddFormProps) {
 // ─── Main Component ───────────────────────────────────────────────────────────
 
 export function RankingCriteriaStep({
-  initialCriteria = [],
+  initialCriteria,
   isLoading = false,
   onConfirm,
 }: RankingCriteriaStepProps) {
-  const [criteria, setCriteria] = useState<RankingCriterion[]>(initialCriteria);
+  const [criteria, setCriteria] = useState<RankingCriterion[]>(
+    Array.isArray(initialCriteria) && initialCriteria.length > 0 ? initialCriteria : []
+  );
   const [error, setError] = useState<string | null>(null);
   const [showAddForm, setShowAddForm] = useState(false);
 
-  // Sync with new initialCriteria when loading finishes
-  const [prevInitial, setPrevInitial] = useState(initialCriteria);
-  if (initialCriteria !== prevInitial && initialCriteria.length > 0) {
-    setPrevInitial(initialCriteria);
-    setCriteria(initialCriteria);
-    setError(null);
-  }
+  // Keep criteria in sync with prop when it changes from empty to populated
+  useEffect(() => {
+    if (Array.isArray(initialCriteria) && initialCriteria.length > 0) {
+      setCriteria(initialCriteria);
+    }
+  }, [initialCriteria]);
 
   const handlePriorityChange = useCallback((id: string, priority: Priority) => {
     setCriteria((prev) =>
@@ -446,14 +425,17 @@ export function RankingCriteriaStep({
 
   const handleAddCriterion = useCallback(
     (data: { category: CriteriaCategory; label: string; priority: Priority; maxScore: number }) => {
-      const newCriterion: RankingCriterion = {
-        id: generateId(),
-        category: data.category,
-        label: data.label,
-        priority: data.priority,
-        maxScore: data.maxScore,
-      };
-      setCriteria((prev) => [...prev, newCriterion]);
+      setCriteria((prev) => {
+        if (prev.length >= MAX_CRITERIA) return prev;
+        const newCriterion: RankingCriterion = {
+          id: generateId(),
+          category: data.category,
+          label: data.label,
+          priority: data.priority,
+          maxScore: data.maxScore,
+        };
+        return [...prev, newCriterion];
+      });
       setError(null);
       setShowAddForm(false);
     },
@@ -534,32 +516,28 @@ export function RankingCriteriaStep({
         <button
           type="button"
           onClick={() => setShowAddForm(true)}
+          disabled={criteria.length >= MAX_CRITERIA}
           className={cn(
             "flex w-full items-center justify-center gap-2 rounded-[16px]",
             "border-2 border-dashed border-border bg-white py-4",
             "text-sm font-medium text-muted-foreground",
             "transition-colors hover:border-indigo-300 hover:text-indigo-600",
-            "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+            "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600",
+            "disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:border-border disabled:hover:text-muted-foreground"
           )}
           aria-label="Add custom criterion"
         >
           <Plus className="h-4 w-4" aria-hidden="true" />
-          Add Custom Criterion
+          {criteria.length >= MAX_CRITERIA
+            ? `Maximum ${MAX_CRITERIA} criteria reached`
+            : "Add Custom Criterion"}
         </button>
       )}
 
-      {/* Continue button */}
-      <div className="pt-4">
-        <Button
-          onClick={handleConfirm}
-          disabled={criteria.length === 0}
-          className="w-full"
-          size="lg"
-          aria-label="Confirm ranking criteria and continue"
-        >
-          Continue
-        </Button>
-      </div>
+      {/* Criteria count */}
+      <p className="text-xs text-muted-foreground text-center">
+        {criteria.length} of {MAX_CRITERIA} criteria
+      </p>
     </div>
   );
 }

@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useRef, useState } from "react";
-import { CloudUpload, CheckCircle2, XCircle, FileText } from "lucide-react";
+import { CloudUpload, CheckCircle2, XCircle, FileText, Link2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {
@@ -39,7 +39,13 @@ function generateId(): string {
 // --- Component ---
 
 export function ResumeUploadStep({ onContinue, projectId }: ResumeUploadStepProps) {
+  const [inputMode, setInputMode] = useState<"upload" | "paste" | "linkedin">("upload");
   const [fileEntries, setFileEntries] = useState<FileEntry[]>([]);
+  const [pastedResumes, setPastedResumes] = useState<string[]>([]);
+  const [currentPaste, setCurrentPaste] = useState("");
+  const [linkedinUrls, setLinkedinUrls] = useState<string[]>([]);
+  const [currentUrl, setCurrentUrl] = useState("");
+  const [urlError, setUrlError] = useState("");
   const [isDragOver, setIsDragOver] = useState(false);
   const [batchLimitError, setBatchLimitError] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -48,7 +54,9 @@ export function ResumeUploadStep({ onContinue, projectId }: ResumeUploadStepProp
   const rejectedFiles = fileEntries.filter((f) => f.status === "rejected");
   const uploadingFiles = fileEntries.filter((f) => f.status === "uploading");
   const isUploading = uploadingFiles.length > 0;
-  const canContinue = acceptedFiles.length > 0 && !isUploading;
+  
+  const totalCandidates = acceptedFiles.length + pastedResumes.length + linkedinUrls.length;
+  const canContinue = totalCandidates > 0 && !isUploading;
 
   const processFiles = useCallback(
     (incoming: File[]) => {
@@ -177,10 +185,66 @@ export function ResumeUploadStep({ onContinue, projectId }: ResumeUploadStepProp
     onContinue(accepted);
   };
 
+  // --- Paste handlers ---
+  const handleAddPaste = () => {
+    const trimmed = currentPaste.trim();
+    if (trimmed.length < 50) return;
+    setPastedResumes((prev) => [...prev, trimmed]);
+    setCurrentPaste("");
+  };
+
+  const handleRemovePaste = (index: number) => {
+    setPastedResumes((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  // --- LinkedIn handlers ---
+  const handleAddLinkedin = () => {
+    const trimmed = currentUrl.trim();
+    if (trimmed.length < 50) {
+      setUrlError("Profile content is too short. Please paste the full LinkedIn profile.");
+      return;
+    }
+    setUrlError("");
+    setLinkedinUrls((prev) => [...prev, trimmed]);
+    setCurrentUrl("");
+  };
+
+  const handleRemoveLinkedin = (index: number) => {
+    setLinkedinUrls((prev) => prev.filter((_, i) => i !== index));
+  };
+
   return (
     <div className="flex flex-col gap-6">
-      {/* Drop zone */}
-      <div
+      {/* Input mode tabs */}
+      <div className="flex gap-2" role="tablist" aria-label="Candidate input method">
+        {([
+          { id: "upload", label: "Upload Resumes" },
+          { id: "paste", label: "Paste Text" },
+          { id: "linkedin", label: "LinkedIn Profile" },
+        ] as const).map((tab) => (
+          <button
+            key={tab.id}
+            type="button"
+            role="tab"
+            aria-selected={inputMode === tab.id}
+            onClick={() => setInputMode(tab.id)}
+            className={cn(
+              "rounded-[8px] px-4 py-2 text-sm font-medium transition-colors",
+              inputMode === tab.id
+                ? "bg-indigo-50 text-indigo-700"
+                : "text-muted-foreground hover:bg-gray-50"
+            )}
+          >
+            {tab.label}
+          </button>
+        ))}
+      </div>
+
+      {/* Upload mode */}
+      {inputMode === "upload" && (
+        <>
+          {/* Drop zone */}
+          <div
         role="button"
         tabIndex={0}
         aria-label="Drag and drop PDF resumes here, or click to browse files"
@@ -345,6 +409,142 @@ export function ResumeUploadStep({ onContinue, projectId }: ResumeUploadStepProp
           Continue
         </Button>
       </div>
+        </>
+      )}
+
+      {/* Paste text mode */}
+      {inputMode === "paste" && (
+        <div className="space-y-4">
+          <p className="text-sm text-muted-foreground">
+            Paste resume text directly. Each paste is treated as one candidate.
+          </p>
+          <textarea
+            value={currentPaste}
+            onChange={(e) => setCurrentPaste(e.target.value)}
+            placeholder="Paste a candidate's resume text here (minimum 50 characters)..."
+            rows={8}
+            className={cn(
+              "w-full resize-y rounded-[12px] border px-4 py-3 text-sm text-navy",
+              "placeholder:text-muted-foreground outline-none transition-colors",
+              "focus:border-indigo-600 focus:ring-2 focus:ring-indigo-600/20",
+              "border-border"
+            )}
+          />
+          <Button
+            type="button"
+            onClick={handleAddPaste}
+            disabled={currentPaste.trim().length < 50}
+            className="bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-50"
+          >
+            Add Candidate
+          </Button>
+
+          {/* Pasted resumes list */}
+          {pastedResumes.length > 0 && (
+            <div className="space-y-2">
+              <h3 className="text-sm font-medium text-navy">
+                Pasted resumes ({pastedResumes.length})
+              </h3>
+              <ul className="space-y-1">
+                {pastedResumes.map((text, i) => (
+                  <li key={i} className="flex items-center gap-3 rounded-lg border border-border px-3 py-2">
+                    <FileText className="h-4 w-4 shrink-0 text-gray-400" aria-hidden="true" />
+                    <span className="flex-1 truncate text-sm text-foreground">
+                      Candidate {i + 1} — {text.slice(0, 60)}...
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => handleRemovePaste(i)}
+                      className="shrink-0 text-xs text-red-500 hover:text-red-700"
+                      aria-label={`Remove pasted candidate ${i + 1}`}
+                    >
+                      Remove
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* LinkedIn mode — paste profile content */}
+      {inputMode === "linkedin" && (
+        <div className="space-y-4">
+          <p className="text-sm text-muted-foreground">
+            Copy a candidate's LinkedIn profile page content and paste it here. Go to their profile, select all (Cmd+A), copy (Cmd+C), and paste below.
+          </p>
+          <textarea
+            value={currentUrl}
+            onChange={(e) => {
+              setCurrentUrl(e.target.value);
+              if (urlError) setUrlError("");
+            }}
+            placeholder="Paste LinkedIn profile content here (name, headline, experience, education, skills...)&#10;&#10;Tip: Open their LinkedIn profile → Cmd+A → Cmd+C → Paste here"
+            rows={8}
+            className={cn(
+              "w-full resize-y rounded-[12px] border px-4 py-3 text-sm text-navy",
+              "placeholder:text-muted-foreground outline-none transition-colors",
+              "focus:border-indigo-600 focus:ring-2 focus:ring-indigo-600/20",
+              urlError ? "border-red-500" : "border-border"
+            )}
+          />
+          {urlError && (
+            <p className="text-xs text-red-500" role="alert">{urlError}</p>
+          )}
+          <Button
+            type="button"
+            onClick={handleAddLinkedin}
+            disabled={currentUrl.trim().length < 50}
+            className="bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-50"
+          >
+            Add Candidate
+          </Button>
+
+          {/* LinkedIn profiles list */}
+          {linkedinUrls.length > 0 && (
+            <div className="space-y-2">
+              <h3 className="text-sm font-medium text-navy">
+                LinkedIn profiles ({linkedinUrls.length})
+              </h3>
+              <ul className="space-y-1">
+                {linkedinUrls.map((text, i) => (
+                  <li key={i} className="flex items-center gap-3 rounded-lg border border-border px-3 py-2">
+                    <Link2 className="h-4 w-4 shrink-0 text-[#0A66C2]" aria-hidden="true" />
+                    <span className="flex-1 truncate text-sm text-foreground">
+                      Profile {i + 1} — {text.slice(0, 60)}...
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveLinkedin(i)}
+                      className="shrink-0 text-xs text-red-500 hover:text-red-700"
+                      aria-label={`Remove LinkedIn profile ${i + 1}`}
+                    >
+                      Remove
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Total candidates summary */}
+      {totalCandidates > 0 && (
+        <div className="rounded-lg border border-border bg-gray-50 px-4 py-3">
+          <p className="text-sm font-medium text-navy">
+            {totalCandidates} candidate{totalCandidates !== 1 ? "s" : ""} ready to process
+          </p>
+          <p className="text-xs text-muted-foreground mt-0.5">
+            {acceptedFiles.length > 0 && `${acceptedFiles.length} resume${acceptedFiles.length !== 1 ? "s" : ""}`}
+            {acceptedFiles.length > 0 && (pastedResumes.length > 0 || linkedinUrls.length > 0) && " · "}
+            {pastedResumes.length > 0 && `${pastedResumes.length} pasted`}
+            {pastedResumes.length > 0 && linkedinUrls.length > 0 && " · "}
+            {linkedinUrls.length > 0 && `${linkedinUrls.length} LinkedIn`}
+          </p>
+        </div>
+      )}
     </div>
   );
 }

@@ -77,6 +77,45 @@
   --color-secondary-bg: #F8FAFC;
   --color-border-default: #E5E7EB;
   --color-text-secondary: #6B7280;
+
+  /* === Motion tokens === */
+  --duration-instant: 50ms;
+  --duration-fast: 100ms;
+  --duration-normal: 200ms;
+  --duration-slow: 300ms;
+  --duration-slower: 500ms;
+
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out: cubic-bezier(0.45, 0, 0.55, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  /* === Elevation tokens === */
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.03);
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.03);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.04), 0 2px 4px rgba(0, 0, 0, 0.03);
+  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.04), 0 4px 6px rgba(0, 0, 0, 0.02);
+
+  /* === Spacing aliases (8pt grid) === */
+  --space-0: 0px;
+  --space-0_5: 4px;
+  --space-1: 8px;
+  --space-1_5: 12px;
+  --space-2: 16px;
+  --space-3: 24px;
+  --space-4: 32px;
+  --space-5: 40px;
+  --space-6: 48px;
+  --space-8: 64px;
+  --space-10: 80px;
+  --space-12: 96px;
+
+  /* === Semantic color tokens === */
+  --color-success: #10B981;
+  --color-success-bg: rgba(16, 185, 129, 0.1);
+  --color-warning: #F59E0B;
+  --color-warning-bg: rgba(245, 158, 11, 0.1);
+  --color-error: #EF4444;
+  --color-error-bg: rgba(239, 68, 68, 0.1);
 }
 
 :root {
@@ -154,7 +193,7 @@
     @apply border-border outline-ring/50;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground overflow-x-hidden;
   }
   html {
     @apply font-sans;
@@ -201,6 +240,88 @@
   }
 }
 
+@layer utilities {
+  /* Minimum touch target size (WCAG 2.5.5 — 44×44px) */
+  .min-touch {
+    min-width: 44px;
+    min-height: 44px;
+  }
+
+  /* Base interactive transition — applied to all interactive elements */
+  .interactive {
+    transition-property: background-color, border-color, color, box-shadow, opacity, transform;
+    transition-duration: var(--duration-normal);
+    transition-timing-function: var(--ease-out);
+  }
+
+  /* Press effect for buttons */
+  .press-scale:active:not([aria-haspopup]) {
+    transform: scale(0.98);
+  }
+
+  /* Card hover elevation */
+  .hover-elevate {
+    transition-property: box-shadow, transform;
+    transition-duration: var(--duration-normal);
+    transition-timing-function: var(--ease-out);
+  }
+  .hover-elevate:hover {
+    box-shadow: var(--shadow-md);
+  }
+
+  /* Smooth content entrance */
+  .animate-in-up {
+    animation: slideInUp var(--duration-slow) var(--ease-out) forwards;
+  }
+
+  /* Shimmer for skeleton loaders */
+  .shimmer {
+    background: linear-gradient(
+      90deg,
+      var(--muted) 0%,
+      rgba(248, 250, 252, 0.8) 50%,
+      var(--muted) 100%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 1.5s ease-in-out infinite;
+  }
+
+  /* Progress fill animation */
+  .animate-fill {
+    animation: fillIn var(--duration-slower) var(--ease-out) forwards;
+  }
+}
+
+@keyframes slideInUp {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+@keyframes fillIn {
+  from { stroke-dashoffset: var(--circumference); }
+  to { stroke-dashoffset: var(--fill-offset); }
+}
+
+@keyframes confettiFall {
+  0% {
+    opacity: 1;
+    transform: translateY(-10px) rotate(0deg) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(100vh) rotate(720deg) scale(0.5);
+  }
+}
+
+.confetti-particle {
+  animation: confettiFall 1.8s ease-out forwards;
+}
+
 /* Accessibility: Reduced motion preferences */
 @media (prefers-reduced-motion: reduce) {
   *,
@@ -217,5 +338,24 @@
   *::after {
     transition-property: opacity, color, background-color, border-color !important;
     transition-duration: 200ms !important;
+  }
+
+  /* Disable transform-based animations */
+  .press-scale:active:not([aria-haspopup]),
+  .hover-elevate:hover {
+    transform: none !important;
+  }
+
+  .animate-in-up {
+    animation: none !important;
+    opacity: 1 !important;
+  }
+
+  .shimmer {
+    animation: none !important;
+  }
+
+  .animate-fill {
+    animation: none !important;
   }
 }

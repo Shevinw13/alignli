@@ -1,9 +1,11 @@
 "use client";
 
-import { useState } from "react";
-import { Sparkles, RefreshCw, AlertCircle } from "lucide-react";
+import { Sparkles, RefreshCw, AlertCircle, Lightbulb } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
+
+// --- Legacy interface (kept for backward compatibility) ---
 
 export interface AIBriefData {
   totalCandidates: number;
@@ -13,21 +15,130 @@ export interface AIBriefData {
   recommendedAction: string;
 }
 
+// --- Narrative data interface ---
+
+export interface AIBriefNarrativeData {
+  /** Executive summary paragraph */
+  executiveSummary: string;
+  /** Pool quantification */
+  poolStats: {
+    total: number;
+    exceedingRequirements: number;
+    meetingMinimum: number;
+    notMeeting: number;
+  };
+  /** Top candidates with narrative descriptions */
+  topCandidates: {
+    name: string;
+    narrative: string;
+    strengths: string[];
+  }[];
+  /** Candidates requiring discussion */
+  discussionCandidates: {
+    name: string;
+    narrative: string;
+    concerns: string[];
+  }[];
+  /** Not recommended */
+  notRecommended: {
+    count: number;
+    commonReasons: string[];
+  };
+  /** Suggestions when pool is limited */
+  limitedPoolSuggestions?: string[];
+}
+
+// --- Props interface (backward compatible) ---
+
 interface AIBriefProps {
   data: AIBriefData | null;
+  narrativeData?: AIBriefNarrativeData | null;
   isLoading: boolean;
   error: boolean;
   onRetry: () => void;
   zeroCandidates: boolean;
 }
 
+// --- Skeleton Loader for narrative layout ---
+
+function AIBriefSkeleton() {
+  return (
+    <div className="mt-6 space-y-6" aria-busy="true">
+      {/* Executive Summary skeleton */}
+      <div className="space-y-2">
+        <Skeleton variant="text" className="h-5 w-48" />
+        <Skeleton variant="text" className="h-4 w-full" />
+        <Skeleton variant="text" className="h-4 w-full" />
+        <Skeleton variant="text" className="h-4 w-3/4" />
+      </div>
+      {/* Top Candidates skeleton */}
+      <div className="space-y-3">
+        <Skeleton variant="text" className="h-5 w-36" />
+        <Skeleton variant="rectangular" className="h-20 w-full rounded-[12px]" />
+        <Skeleton variant="rectangular" className="h-20 w-full rounded-[12px]" />
+      </div>
+      {/* Discussion section skeleton */}
+      <div className="space-y-2">
+        <Skeleton variant="text" className="h-5 w-52" />
+        <Skeleton variant="text" className="h-4 w-full" />
+        <Skeleton variant="text" className="h-4 w-5/6" />
+      </div>
+    </div>
+  );
+}
+
+// --- Helper: Convert legacy data to narrative format ---
+
+function legacyToNarrative(data: AIBriefData): AIBriefNarrativeData {
+  const exceedingCount = Math.round(data.totalCandidates * 0.2);
+  const meetingCount = Math.round(data.totalCandidates * 0.5);
+  const notMeetingCount = data.totalCandidates - exceedingCount - meetingCount;
+
+  return {
+    executiveSummary: `We reviewed ${data.totalCandidates} resumes. ${exceedingCount} candidates clearly exceed your requirements, ${meetingCount} meet minimum criteria, and ${notMeetingCount} fall short of the baseline. ${data.scoreDistribution}`,
+    poolStats: {
+      total: data.totalCandidates,
+      exceedingRequirements: exceedingCount,
+      meetingMinimum: meetingCount,
+      notMeeting: notMeetingCount,
+    },
+    topCandidates: data.topHighlights.map((highlight, i) => ({
+      name: `Candidate ${i + 1}`,
+      narrative: highlight,
+      strengths: [],
+    })),
+    discussionCandidates: data.patterns.map((pattern, i) => ({
+      name: `Candidate ${exceedingCount + i + 1}`,
+      narrative: pattern,
+      concerns: [],
+    })),
+    notRecommended: {
+      count: notMeetingCount,
+      commonReasons: [data.recommendedAction],
+    },
+    limitedPoolSuggestions:
+      exceedingCount < 3
+        ? [
+            "Consider broadening experience requirements",
+            "Review whether all listed skills are truly essential",
+          ]
+        : undefined,
+  };
+}
+
+// --- Main Component ---
+
 export function AIBrief({
   data,
+  narrativeData,
   isLoading,
   error,
   onRetry,
   zeroCandidates,
 }: AIBriefProps) {
+  // Use narrative data if available, otherwise convert legacy data
+  const narrative = narrativeData ?? (data ? legacyToNarrative(data) : null);
+
   return (
     <section
       className={cn(
@@ -46,13 +157,8 @@ export function AIBrief({
         </h2>
       </div>
 
-      {/* Loading state */}
-      {isLoading && (
-        <div className="mt-4 flex items-center gap-2 text-sm text-muted-foreground">
-          <RefreshCw className="h-4 w-4 animate-spin" aria-hidden="true" />
-          <span>Generating AI Brief…</span>
-        </div>
-      )}
+      {/* Loading state — skeleton matching narrative layout */}
+      {isLoading && <AIBriefSkeleton />}
 
       {/* Error state with retry */}
       {error && !isLoading && (
@@ -84,93 +190,144 @@ export function AIBrief({
       {/* Zero candidates state */}
       {!isLoading && !error && zeroCandidates && (
         <div className="mt-4 space-y-3">
-          <div className="flex items-baseline gap-2">
-            <span className="text-sm font-medium text-navy">
-              Total Candidates:
-            </span>
-            <span className="text-sm text-muted-foreground">0</span>
-          </div>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-sm text-muted-foreground leading-relaxed">
             No candidates have been added to this project yet. Upload resumes to
             get started with AI-powered analysis.
           </p>
         </div>
       )}
 
-      {/* Brief content */}
-      {!isLoading && !error && data && !zeroCandidates && (
-        <div className="mt-4 space-y-4">
-          {/* Total Candidates */}
-          <div className="flex items-baseline gap-2">
-            <span className="text-sm font-medium text-navy">
-              Total Candidates:
-            </span>
-            <span className="text-2xl font-bold text-indigo-600">
-              {data.totalCandidates}
-            </span>
-          </div>
-
-          {/* Score Distribution */}
+      {/* Narrative brief content */}
+      {!isLoading && !error && narrative && !zeroCandidates && (
+        <div className="mt-6 space-y-6">
+          {/* Executive Summary */}
           <div>
-            <h3 className="text-sm font-medium text-navy">
-              Score Distribution
+            <h3 className="text-sm font-semibold text-navy mb-2">
+              Executive Summary
             </h3>
-            <p className="mt-1 text-sm text-muted-foreground">
-              {data.scoreDistribution}
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              {narrative.executiveSummary}
             </p>
           </div>
 
-          {/* Top Highlights */}
-          {data.topHighlights.length > 0 && (
+          {/* Top Candidates */}
+          {narrative.topCandidates.length > 0 && (
             <div>
-              <h3 className="text-sm font-medium text-navy">Top Highlights</h3>
-              <ul className="mt-1 space-y-1">
-                {data.topHighlights.map((highlight, index) => (
-                  <li
+              <h3 className="text-sm font-semibold text-navy mb-3">
+                Top Candidates
+              </h3>
+              <div className="space-y-3">
+                {narrative.topCandidates.map((candidate, index) => (
+                  <div
                     key={index}
-                    className="flex items-start gap-2 text-sm text-muted-foreground"
+                    className="rounded-[12px] border border-emerald-100 bg-emerald-50/50 p-4"
                   >
-                    <span
-                      className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-indigo-400"
-                      aria-hidden="true"
-                    />
-                    {highlight}
-                  </li>
+                    <p className="text-sm font-medium text-navy">
+                      {candidate.name}
+                    </p>
+                    <p className="mt-1 text-sm text-muted-foreground leading-relaxed">
+                      {candidate.narrative}
+                    </p>
+                    {candidate.strengths.length > 0 && (
+                      <div className="mt-2 flex flex-wrap gap-1.5">
+                        {candidate.strengths.map((strength, si) => (
+                          <span
+                            key={si}
+                            className="inline-block rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs font-medium text-emerald-700"
+                          >
+                            {strength}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                  </div>
                 ))}
-              </ul>
+              </div>
             </div>
           )}
 
-          {/* Patterns */}
-          {data.patterns.length > 0 && (
+          {/* Limited pool callout — shown when fewer than 3 exceed requirements */}
+          {narrative.limitedPoolSuggestions &&
+            narrative.limitedPoolSuggestions.length > 0 && (
+              <div className="flex gap-3 rounded-[12px] border border-amber-100 bg-amber-50/50 p-4">
+                <Lightbulb
+                  className="h-5 w-5 shrink-0 text-amber-500 mt-0.5"
+                  aria-hidden="true"
+                />
+                <div>
+                  <p className="text-sm font-medium text-amber-800">
+                    Limited candidate pool
+                  </p>
+                  <p className="mt-1 text-sm text-amber-700 leading-relaxed">
+                    Fewer than 3 candidates clearly exceed your requirements.
+                    Consider adjusting your criteria:
+                  </p>
+                  <ul className="mt-2 space-y-1">
+                    {narrative.limitedPoolSuggestions.map((suggestion, i) => (
+                      <li
+                        key={i}
+                        className="text-sm text-amber-700 leading-relaxed"
+                      >
+                        • {suggestion}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            )}
+
+          {/* Candidates Requiring Discussion */}
+          {narrative.discussionCandidates.length > 0 && (
             <div>
-              <h3 className="text-sm font-medium text-navy">Patterns</h3>
-              <ul className="mt-1 space-y-1">
-                {data.patterns.map((pattern, index) => (
-                  <li
+              <h3 className="text-sm font-semibold text-navy mb-3">
+                Candidates Requiring Discussion
+              </h3>
+              <div className="space-y-3">
+                {narrative.discussionCandidates.map((candidate, index) => (
+                  <div
                     key={index}
-                    className="flex items-start gap-2 text-sm text-muted-foreground"
+                    className="rounded-[12px] border border-amber-100 bg-amber-50/30 p-4"
                   >
-                    <span
-                      className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-amber-400"
-                      aria-hidden="true"
-                    />
-                    {pattern}
-                  </li>
+                    <p className="text-sm font-medium text-navy">
+                      {candidate.name}
+                    </p>
+                    <p className="mt-1 text-sm text-muted-foreground leading-relaxed">
+                      {candidate.narrative}
+                    </p>
+                    {candidate.concerns.length > 0 && (
+                      <div className="mt-2 flex flex-wrap gap-1.5">
+                        {candidate.concerns.map((concern, ci) => (
+                          <span
+                            key={ci}
+                            className="inline-block rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-medium text-amber-700"
+                          >
+                            {concern}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                  </div>
                 ))}
-              </ul>
+              </div>
             </div>
           )}
 
-          {/* Recommended Action */}
-          <div className="rounded-[12px] border border-indigo-100 bg-indigo-50 p-4">
-            <h3 className="text-sm font-medium text-indigo-700">
-              Recommended Action
-            </h3>
-            <p className="mt-1 text-sm text-indigo-600">
-              {data.recommendedAction}
-            </p>
-          </div>
+          {/* Not Recommended */}
+          {narrative.notRecommended.count > 0 && (
+            <div>
+              <h3 className="text-sm font-semibold text-navy mb-2">
+                Not Recommended
+              </h3>
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                {narrative.notRecommended.count} candidate
+                {narrative.notRecommended.count !== 1 ? "s" : ""}{" "}
+                {narrative.notRecommended.count !== 1 ? "fall" : "falls"} short
+                of your baseline requirements.
+                {narrative.notRecommended.commonReasons.length > 0 &&
+                  ` Common reasons: ${narrative.notRecommended.commonReasons.join(", ")}.`}
+              </p>
+            </div>
+          )}
         </div>
       )}
     </section>

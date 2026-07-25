@@ -3,8 +3,52 @@
  *
  * Centralized design system values for use in components.
  * These complement Tailwind CSS utility classes for cases where
- * programmatic access to design values is needed.
+ * programmatic access to design values is needed (JS-driven animations,
+ * conditional logic, etc.).
+ *
+ * All values mirror the CSS custom properties defined in globals.css.
  */
+
+// ─── Duration Tokens ─────────────────────────────────────────────────────────
+
+export const durations = {
+  instant: 50,
+  fast: 100,
+  normal: 200,
+  slow: 300,
+  slower: 500,
+} as const;
+
+export type Duration = keyof typeof durations;
+
+// ─── Easing Tokens ───────────────────────────────────────────────────────────
+
+export const easings = {
+  out: "cubic-bezier(0.16, 1, 0.3, 1)",
+  inOut: "cubic-bezier(0.45, 0, 0.55, 1)",
+  spring: "cubic-bezier(0.34, 1.56, 0.64, 1)",
+} as const;
+
+export type Easing = keyof typeof easings;
+
+// ─── Spacing (8pt grid) ──────────────────────────────────────────────────────
+
+export const spacing = {
+  0: "0px",
+  0.5: "4px",
+  1: "8px",
+  1.5: "12px",
+  2: "16px",
+  3: "24px",
+  4: "32px",
+  5: "40px",
+  6: "48px",
+  8: "64px",
+  10: "80px",
+  12: "96px",
+} as const;
+
+export type SpacingKey = keyof typeof spacing;
 
 // ─── Colors ───────────────────────────────────────────────────────────────────
 
@@ -24,8 +68,11 @@ export const colors = {
     950: "#1E1B4B",
   },
   success: "#10B981",
+  successBg: "rgba(16, 185, 129, 0.1)",
   warning: "#F59E0B",
+  warningBg: "rgba(245, 158, 11, 0.1)",
   error: "#EF4444",
+  errorBg: "rgba(239, 68, 68, 0.1)",
   text: {
     primary: "#0F172A",
     secondary: "#6B7280",
@@ -35,27 +82,33 @@ export const colors = {
     secondary: "#F8FAFC",
   },
   border: "#E5E7EB",
+  emerald500: "#10B981",
+  amber500: "#F59E0B",
+  red500: "#EF4444",
+  navy: "#0F172A",
 } as const;
 
-// ─── Spacing (8pt grid) ──────────────────────────────────────────────────────
+// ─── Shadows ─────────────────────────────────────────────────────────────────
 
-export const spacing = {
-  0.5: "4px",
-  1: "8px",
-  1.5: "12px",
-  2: "16px",
-  3: "24px",
-  4: "32px",
-  5: "40px",
-  6: "48px",
-  8: "64px",
-  10: "80px",
-  12: "96px",
+export const shadows = {
+  xs: "0 1px 2px rgba(0, 0, 0, 0.03)",
+  sm: "0 1px 3px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.03)",
+  md: "0 4px 6px rgba(0, 0, 0, 0.04), 0 2px 4px rgba(0, 0, 0, 0.03)",
+  lg: "0 10px 15px rgba(0, 0, 0, 0.04), 0 4px 6px rgba(0, 0, 0, 0.02)",
 } as const;
+
+export type Shadow = keyof typeof shadows;
 
 // ─── Border Radius ───────────────────────────────────────────────────────────
 
 export const borderRadius = {
+  sm: "8px",
+  md: "12px",
+  lg: "16px",
+  xl: "20px",
+  "2xl": "24px",
+  "3xl": "28px",
+  "4xl": "32px",
   button: "12px",
   card: "16px",
   dialog: "20px",
@@ -106,16 +159,27 @@ export const typography = {
   },
 } as const;
 
-// ─── Shadows (very minimal per design system) ────────────────────────────────
-
-export const shadows = {
-  sm: "0 1px 2px rgba(0, 0, 0, 0.03)",
-  md: "0 2px 4px rgba(0, 0, 0, 0.05)",
-  lg: "0 4px 4px rgba(0, 0, 0, 0.05)",
-} as const;
-
 // ─── Layout ──────────────────────────────────────────────────────────────────
 
 export const layout = {
   maxContentWidth: "1280px",
 } as const;
+
+// ─── Utility: build a CSS transition string ──────────────────────────────────
+
+/**
+ * Build a CSS transition string from token values.
+ *
+ * @example
+ * buildTransition(["opacity", "transform"], "normal", "out")
+ * // => "opacity 200ms cubic-bezier(0.16, 1, 0.3, 1), transform 200ms cubic-bezier(0.16, 1, 0.3, 1)"
+ */
+export function buildTransition(
+  properties: string[],
+  duration: Duration = "normal",
+  easing: Easing = "out"
+): string {
+  const ms = durations[duration];
+  const curve = easings[easing];
+  return properties.map((prop) => `${prop} ${ms}ms ${curve}`).join(", ");
+}

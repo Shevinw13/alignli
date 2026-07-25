@@ -24,7 +24,7 @@ export function ClosedProjectCard({
     <div
       className={cn(
         "flex items-center justify-between gap-4",
-        "rounded-[16px] border border-border bg-white px-6 py-4"
+        "rounded-[16px] border border-border bg-white p-4"
       )}
     >
       <div className="min-w-0 flex-1">

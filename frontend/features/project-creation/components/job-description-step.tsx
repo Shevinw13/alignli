@@ -3,6 +3,8 @@
 import { useState, useRef, useCallback } from "react";
 import { Upload, X, Plus, AlertCircle, Loader2, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { CharacterCounter } from "@/components/ui/character-counter";
+import { useAutoFocus } from "@/lib/hooks/use-auto-focus";
 import { cn } from "@/lib/utils";
 
 // --- Types ---
@@ -192,6 +194,7 @@ export function JobDescriptionStep({
   onSubmit,
   onBack,
 }: JobDescriptionStepProps) {
+  const containerRef = useAutoFocus<HTMLDivElement>();
   const [stepState, setStepState] = useState<StepState>(
     initialData?.extractedCategories &&
       getTotalItems(initialData.extractedCategories) > 0
@@ -325,6 +328,12 @@ export function JobDescriptionStep({
 
       setCategories(extracted);
       setStepState("review");
+      // Auto-save to wizard context so data is available when Next is clicked
+      onSubmit({
+        rawText: textToExtract,
+        fileName: fileName || undefined,
+        extractedCategories: extracted,
+      });
     } catch {
       setError(
         "Failed to extract information from the job description. Please try again."
@@ -395,7 +404,7 @@ export function JobDescriptionStep({
   // --- Render ---
 
   return (
-    <div className="space-y-6">
+    <div ref={containerRef} className="space-y-6">
       <div>
         <h2 className="text-lg font-semibold text-navy">Job Description</h2>
         <p className="mt-1 text-sm text-muted-foreground">
@@ -552,9 +561,7 @@ function InputState({
             <p id="jd-text-hint" className="text-xs text-muted-foreground">
               Minimum {MIN_TEXT_LENGTH} characters required
             </p>
-            <p className="text-xs text-muted-foreground">
-              {text.length.toLocaleString()}/{MAX_TEXT_LENGTH.toLocaleString()}
-            </p>
+            <CharacterCounter current={text.length} max={MAX_TEXT_LENGTH} />
           </div>
         </div>
       )}
@@ -638,16 +645,6 @@ function InputState({
 
       {/* Action Buttons */}
       <div className="flex items-center gap-3 pt-2">
-        {onBack && (
-          <Button
-            type="button"
-            onClick={onBack}
-            variant="outline"
-            className="h-10 rounded-[12px] px-6 text-sm font-semibold"
-          >
-            Back
-          </Button>
-        )}
         <Button
           type="button"
           onClick={onExtract}
@@ -772,17 +769,6 @@ function ReviewState({
           {error}
         </p>
       )}
-
-      {/* Continue Button */}
-      <div className="pt-2">
-        <Button
-          type="button"
-          onClick={onContinue}
-          className="h-10 rounded-[12px] bg-indigo-600 px-6 text-sm font-semibold text-white hover:bg-indigo-700"
-        >
-          Continue
-        </Button>
-      </div>
     </div>
   );
 }
@@ -984,16 +970,6 @@ function ErrorState({ error, onRetry, onBack }: ErrorStateProps) {
         </p>
       </div>
       <div className="flex items-center gap-3">
-        {onBack && (
-          <Button
-            type="button"
-            onClick={onBack}
-            variant="outline"
-            className="h-10 rounded-[12px] px-6 text-sm font-semibold"
-          >
-            Back
-          </Button>
-        )}
         <Button
           type="button"
           onClick={onRetry}

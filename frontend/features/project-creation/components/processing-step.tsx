@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { CheckCircle2, Loader2, Circle, XCircle, AlertTriangle } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Confetti } from "@/components/shared/confetti";
 
 // --- Types ---
 
@@ -83,6 +84,8 @@ export function ProcessingStep({
     }
 
     setAllComplete(true);
+    // Redirect home after 3 seconds
+    setTimeout(() => { window.location.href = "/"; }, 3000);
   }, []);
 
   // SSE subscription for real-time progress
@@ -129,9 +132,7 @@ export function ProcessingStep({
     if (allComplete && !navigating) {
       setNavigating(true);
       navigateTimerRef.current = setTimeout(() => {
-        if (mountedRef.current) {
-          router.push(`/projects/${projectId}`);
-        }
+        window.location.href = "/";
       }, AUTO_NAVIGATE_DELAY_MS);
     }
 
@@ -159,6 +160,9 @@ export function ProcessingStep({
 
   return (
     <div className="flex flex-col gap-6">
+      {/* Celebratory confetti on completion */}
+      <Confetti active={allComplete} duration={1800} />
+
       <div>
         <h2 className="text-lg font-semibold text-navy">
           Processing Resumes
@@ -240,7 +244,7 @@ export function ProcessingStep({
             aria-hidden="true"
           />
           <span className="text-sm font-medium text-emerald-700">
-            Processing complete! Redirecting to project page…
+            Processing complete! Redirecting to your projects…
           </span>
         </div>
       )}

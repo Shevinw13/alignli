@@ -67,7 +67,7 @@ export function OverviewTab({
       />
 
       {/* Stats cards row */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
         <StatsCard
           label="Total Candidates"
           value={totalCandidates}
@@ -87,7 +87,7 @@ export function OverviewTab({
 
       {/* Job Summary */}
       <section
-        className="rounded-[16px] border border-border bg-white p-6"
+        className="rounded-[16px] border border-border bg-white p-4"
         aria-labelledby="job-summary-heading"
       >
         <h3
@@ -103,7 +103,7 @@ export function OverviewTab({
 
       {/* Ranking Criteria */}
       <section
-        className="rounded-[16px] border border-border bg-white p-6"
+        className="rounded-[16px] border border-border bg-white p-4"
         aria-labelledby="ranking-criteria-heading"
       >
         <h3

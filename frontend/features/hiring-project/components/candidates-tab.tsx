@@ -2,8 +2,9 @@
 
 import { useState, useMemo } from "react";
 import { Button } from "@/components/ui/button";
+import { EmptyState } from "@/components/ui/empty-state";
 import { cn } from "@/lib/utils";
-import { ChevronLeft, ChevronRight, Search } from "lucide-react";
+import { ChevronLeft, ChevronRight, Search, Upload } from "lucide-react";
 import { CandidateCard, type CandidateCardData, type ConfidenceLevel } from "./candidate-card";
 
 // --- Types ---
@@ -268,19 +269,7 @@ function Pagination({
 
 // --- Empty State ---
 
-function EmptyState() {
-  return (
-    <div className="rounded-[16px] border border-border bg-white p-12 text-center">
-      <Search className="mx-auto h-10 w-10 text-muted-foreground/50" aria-hidden="true" />
-      <p className="mt-3 text-sm font-medium text-navy">
-        No candidates match the current filter criteria
-      </p>
-      <p className="mt-1 text-xs text-muted-foreground">
-        Try adjusting your score range or confidence level filter.
-      </p>
-    </div>
-  );
-}
+// (Using shared EmptyState from @/components/ui/empty-state)
 
 // --- Main Component ---
 
@@ -347,6 +336,11 @@ export function CandidatesTab() {
     setCurrentPage(1);
   };
 
+  const hasActiveFilters =
+    filters.minScore !== "" ||
+    filters.maxScore !== "" ||
+    filters.confidenceLevel !== "";
+
   return (
     <div className="space-y-4">
       {/* Filter bar with results count */}
@@ -358,7 +352,31 @@ export function CandidatesTab() {
 
       {/* Results */}
       {paginatedCandidates.length === 0 ? (
-        <EmptyState />
+        hasActiveFilters ? (
+          <div className="rounded-[16px] border border-border bg-white">
+            <EmptyState
+              icon={Search}
+              title="No results match"
+              description="No candidates match the current filter criteria. Try adjusting your score range or confidence level."
+              secondaryLabel="Clear filters"
+              onSecondaryAction={() =>
+                handleFiltersChange({ minScore: "", maxScore: "", confidenceLevel: "" })
+              }
+            />
+          </div>
+        ) : (
+          <div className="rounded-[16px] border border-border bg-white">
+            <EmptyState
+              icon={Upload}
+              title="No candidates yet"
+              description="Upload resumes to get started evaluating candidates for this role."
+              actionLabel="Upload resumes"
+              onAction={() => {
+                /* Will be wired to resume upload in task 20 */
+              }}
+            />
+          </div>
+        )
       ) : (
         <div className="space-y-3" role="list" aria-label="Candidate list">
           {paginatedCandidates.map((candidate) => (

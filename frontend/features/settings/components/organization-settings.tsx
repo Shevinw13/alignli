@@ -1,11 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { UserPlus } from "lucide-react";
 import { TeamMembersList } from "./team-members-list";
 import { InviteMemberDialog } from "./invite-member-dialog";
 import { RolePermissions } from "./role-permissions";
+import { LoadingWrapper } from "@/components/shared/loading-wrapper";
+import { SettingsPageSkeleton } from "./settings-page-skeleton";
 import type { OrganizationMember, PendingInvitation, OrgRole } from "../types";
 
 // ─── Mock data (will be replaced by API integration in task 20) ──────────────
@@ -66,6 +68,13 @@ export function OrganizationSettings() {
   const [pendingInvitations] = useState<PendingInvitation[]>(
     mockPendingInvitations
   );
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Simulate data-fetching loading state (will be replaced by real API in task 20)
+  useEffect(() => {
+    const timer = setTimeout(() => setIsLoading(false), 800);
+    return () => clearTimeout(timer);
+  }, []);
 
   // Current user role — in real app, fetched from auth context
   const currentUserRole: OrgRole = "Owner";
@@ -80,7 +89,8 @@ export function OrganizationSettings() {
   }
 
   return (
-    <div className="space-y-8">
+    <LoadingWrapper isLoading={isLoading} skeleton={<SettingsPageSkeleton />}>
+      <div className="space-y-8">
       {/* Team Management Section */}
       <section aria-labelledby="team-management-heading">
         <div className="flex items-center justify-between gap-4">
@@ -141,6 +151,7 @@ export function OrganizationSettings() {
         onClose={() => setIsInviteOpen(false)}
         onInvite={handleInvite}
       />
-    </div>
+      </div>
+    </LoadingWrapper>
   );
 }

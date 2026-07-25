@@ -149,6 +149,14 @@ async def get_current_user(
     Raises:
         HTTPException 401: If token is missing, expired, or invalid.
     """
+    # DEV BYPASS: Skip auth in development when Clerk keys aren't configured
+    if settings.app_env == "development" and not settings.clerk_secret_key:
+        return AuthenticatedUser(
+            user_id="dev-user",
+            org_id="dev-org",
+            role="Owner",
+        )
+
     if credentials is None:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,

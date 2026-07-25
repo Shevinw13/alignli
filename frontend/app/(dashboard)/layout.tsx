@@ -1,6 +1,7 @@
 import { Sidebar } from "@/components/shared/sidebar";
 import { ToastProvider } from "@/components/shared/toast-provider";
 import { NotificationProvider } from "@/components/shared/notification-center";
+import { PageErrorBoundary } from "@/components/shared/page-error-boundary";
 
 export default function DashboardLayout({
   children,
@@ -19,7 +20,9 @@ export default function DashboardLayout({
             id="main-content"
           >
             <div className="mx-auto max-w-[1280px] px-4 py-4 md:px-8 md:py-8">
-              {children}
+              <PageErrorBoundary>
+                {children}
+              </PageErrorBoundary>
             </div>
           </main>
         </div>

@@ -26,7 +26,7 @@ export function CandidateColumn({ candidate }: CandidateColumnProps) {
   const progress = (candidate.matchScore / 100) * circumference;
 
   return (
-    <div className="flex flex-col items-center rounded-[12px] border border-border bg-white p-4">
+    <div className="flex flex-col items-center rounded-[12px] border border-border bg-white p-4 hover-elevate">
       {/* Avatar placeholder */}
       <div className="flex h-12 w-12 items-center justify-center rounded-full bg-indigo-100 text-indigo-600 text-sm font-semibold">
         {candidate.fullName

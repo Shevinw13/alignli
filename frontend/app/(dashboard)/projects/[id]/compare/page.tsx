@@ -5,6 +5,7 @@ import { useParams } from "next/navigation";
 import { ArrowLeft, AlertCircle } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
+import { Breadcrumb } from "@/components/shared";
 import {
   ComparisonView,
   validateCandidateSelection,
@@ -248,6 +249,15 @@ export default function CompareCandidatesPage() {
 
   return (
     <div className="space-y-6">
+      {/* Breadcrumb navigation */}
+      <Breadcrumb
+        items={[
+          { label: "Projects", href: "/" },
+          { label: "Project", href: `/projects/${params.id}` },
+          { label: "Compare", href: `/projects/${params.id}/compare` },
+        ]}
+      />
+
       {/* Page header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-4">

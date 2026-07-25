@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Plus_Jakarta_Sans } from "next/font/google";
 import { ClerkProvider } from "@clerk/nextjs";
+import { SkipToContent } from "@/components/shared/skip-to-content";
 import "./globals.css";
 
 const plusJakartaSans = Plus_Jakarta_Sans({
@@ -24,9 +25,7 @@ export default function RootLayout({
     <ClerkProvider>
       <html lang="en" className={`${plusJakartaSans.variable} h-full antialiased`}>
         <body className="min-h-full flex flex-col font-sans">
-          <a href="#main-content" className="skip-to-content">
-            Skip to main content
-          </a>
+          <SkipToContent />
           <main id="main-content" className="flex-1">
             {children}
           </main>

@@ -1,5 +1,14 @@
 // Custom hooks module
+export { useAutoFocus } from "./use-auto-focus";
 export { useFocusTrap } from "./use-focus-trap";
+export { useIntersectionObserver } from "./use-intersection-observer";
+export type { UseIntersectionObserverReturn } from "./use-intersection-observer";
+export { useKeyboardNavigation } from "./use-keyboard-navigation";
+export type {
+  UseKeyboardNavigationOptions,
+  UseKeyboardNavigationReturn,
+  KeyboardNavigationItemProps,
+} from "./use-keyboard-navigation";
 export { useReducedMotion } from "./use-reduced-motion";
 export { useSSE } from "./use-sse";
 export type { UseSSEOptions, UseSSEReturn } from "./use-sse";

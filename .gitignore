@@ -32,3 +32,6 @@ Thumbs.db
 
 # Misc
 *.log
+
+# Hypothesis test database
+.hypothesis/

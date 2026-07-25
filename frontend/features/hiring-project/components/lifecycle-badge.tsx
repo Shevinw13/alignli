@@ -19,7 +19,7 @@ const stateStyles: Record<ProjectState, string> = {
   Reviewing: "bg-amber-50 text-amber-700",
   Interviewing: "bg-blue-50 text-blue-700",
   "Offer Extended": "bg-purple-50 text-purple-700",
-  Filled: "bg-indigo-50 text-indigo-700",
+  Filled: "bg-sky-50 text-sky-700",
   Archived: "bg-gray-100 text-gray-500",
 };
 

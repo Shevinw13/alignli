@@ -5,6 +5,7 @@ import { useParams } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, User, MapPin, Briefcase, Calendar } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Breadcrumb } from "@/components/shared";
 import {
   HireCandidateButton,
   AISummarySection,
@@ -501,6 +502,15 @@ export default function CandidateProfilePage() {
 
   return (
     <div className="space-y-8">
+      {/* Breadcrumb navigation */}
+      <Breadcrumb
+        items={[
+          { label: "Projects", href: "/" },
+          { label: projectContext.title, href: `/projects/${params.id}` },
+          { label: candidate.name, href: `/projects/${params.id}/candidates/${params.candidateId}` },
+        ]}
+      />
+
       {/* ─── Header ─────────────────────────────────────────────────────── */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div className="flex items-start gap-4">

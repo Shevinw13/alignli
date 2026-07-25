@@ -13,7 +13,7 @@ export interface ProjectCardProps {
 }
 
 const statusStyles: Record<string, string> = {
-  "In Progress": "bg-indigo-50 text-indigo-700",
+  "In Progress": "bg-sky-50 text-sky-700",
   Active: "bg-emerald-50 text-emerald-700",
   Reviewing: "bg-amber-50 text-amber-700",
   Interviewing: "bg-blue-50 text-blue-700",
@@ -30,8 +30,8 @@ export function ProjectCard({
   return (
     <div
       className={cn(
-        "rounded-[16px] border border-border bg-white p-6",
-        "transition-shadow hover:shadow-[0_4px_4px_rgba(0,0,0,0.05)]"
+        "rounded-[16px] border border-border bg-white p-4",
+        "hover-elevate"
       )}
     >
       <div className="flex items-start justify-between gap-4">

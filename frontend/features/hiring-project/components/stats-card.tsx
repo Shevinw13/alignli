@@ -10,12 +10,12 @@ export function StatsCard({ label, value, icon }: StatsCardProps) {
   return (
     <div
       className={cn(
-        "rounded-[16px] border border-border bg-white p-6",
-        "transition-shadow hover:shadow-[0_2px_4px_rgba(0,0,0,0.05)]"
+        "rounded-[16px] border border-border bg-white p-4",
+        "hover-elevate"
       )}
     >
       <div className="flex items-center gap-3">
-        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[12px] bg-indigo-50 text-indigo-600">
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[12px] bg-gray-100 text-muted-foreground">
           {icon}
         </div>
         <div className="min-w-0">

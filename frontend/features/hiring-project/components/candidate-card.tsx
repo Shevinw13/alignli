@@ -2,22 +2,31 @@
 
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { ProgressRing } from "@/components/ui/progress-ring";
 import { User, Eye, GitCompare, Mail } from "lucide-react";
-import { ScoreIndicator } from "./score-indicator";
+import Link from "next/link";
+import { useParams } from "next/navigation";
 
 // --- Types ---
 
 export type ConfidenceLevel = "High" | "Medium" | "Low";
 
+export interface EvaluationEvidence {
+  category: string;
+  tags: string[];
+}
+
 export interface CandidateCardData {
   id: string;
   name: string;
   currentCompany: string | null;
+  currentRole?: string | null;
   location: string | null;
   yearsExperience: number | null;
   matchScore: number | null;
   confidenceLevel: ConfidenceLevel | null;
   summary: string | null;
+  evaluationEvidence?: EvaluationEvidence[];
 }
 
 // --- Confidence Badge ---
@@ -42,6 +51,32 @@ function ConfidenceBadge({ level }: { level: ConfidenceLevel }) {
   );
 }
 
+// --- Evaluation Evidence Tags ---
+
+function EvidenceTags({ evidence }: { evidence: EvaluationEvidence[] }) {
+  return (
+    <div className="mt-3 space-y-2">
+      {evidence.map((group, index) => (
+        <div key={index}>
+          <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+            {group.category}
+          </span>
+          <div className="mt-1 flex flex-wrap gap-1.5">
+            {group.tags.map((tag, ti) => (
+              <span
+                key={ti}
+                className="inline-block rounded-full bg-indigo-50 px-2.5 py-0.5 text-xs font-medium text-indigo-700"
+              >
+                {tag}
+              </span>
+            ))}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 // --- Candidate Card Component ---
 
 interface CandidateCardProps {
@@ -53,12 +88,15 @@ interface CandidateCardProps {
  *
  * Layout:
  * - Left: Avatar placeholder (gray circle with initials)
- * - Middle: Name (bold), company, location, years experience, 150-char summary snippet
- * - Right: Circular score indicator (percentage inside circle), confidence badge, action buttons
+ * - Middle: Name (20px title weight 600), current role (16px body), metadata (14px caption muted)
+ * - Right: ProgressRing with semantic colors, confidence badge, action buttons
  *
- * Requirements: 10.2, 10.3, 10.4
+ * Requirements: 10.1, 10.2, 10.3, 10.4
  */
 export function CandidateCard({ candidate }: CandidateCardProps) {
+  const params = useParams<{ id: string }>();
+  const projectId = params?.id ?? "1";
+
   // Truncate summary to 150 chars max
   const truncatedSummary = candidate.summary
     ? candidate.summary.length > 150
@@ -76,7 +114,7 @@ export function CandidateCard({ candidate }: CandidateCardProps) {
 
   return (
     <article
-      className="rounded-[16px] border border-border bg-white p-5 transition-shadow hover:shadow-sm"
+      className="hover-elevate rounded-[16px] border border-border bg-white p-5"
       aria-label={`Candidate: ${candidate.name}`}
     >
       <div className="flex items-start gap-4">
@@ -92,10 +130,18 @@ export function CandidateCard({ candidate }: CandidateCardProps) {
         <div className="min-w-0 flex-1">
           <div className="flex items-start justify-between gap-4">
             <div className="min-w-0">
-              <h4 className="text-sm font-semibold text-navy truncate">
+              {/* Name: 20px title, font-weight 600 */}
+              <h4 className="text-[20px] leading-[28px] font-semibold text-navy truncate">
                 {candidate.name}
               </h4>
-              <div className="mt-0.5 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-xs text-muted-foreground">
+              {/* Current role: 16px body */}
+              {candidate.currentRole && (
+                <p className="mt-0.5 text-[16px] leading-[24px] text-foreground truncate">
+                  {candidate.currentRole}
+                </p>
+              )}
+              {/* Metadata: 14px caption, muted-foreground */}
+              <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-[14px] leading-[20px] text-muted-foreground">
                 {candidate.currentCompany && (
                   <span>{candidate.currentCompany}</span>
                 )}
@@ -106,18 +152,31 @@ export function CandidateCard({ candidate }: CandidateCardProps) {
               </div>
             </div>
 
-            {/* Score indicator */}
+            {/* ProgressRing score indicator with semantic colors */}
             {candidate.matchScore !== null && (
-              <ScoreIndicator score={candidate.matchScore} />
+              <ProgressRing
+                value={candidate.matchScore}
+                size={56}
+                strokeWidth={4}
+                animated={true}
+                showLabel={true}
+                semanticColor={true}
+              />
             )}
           </div>
 
           {/* Summary snippet */}
           {truncatedSummary && (
-            <p className="mt-2 text-xs text-muted-foreground leading-relaxed">
+            <p className="mt-2 text-[14px] leading-[20px] text-muted-foreground">
               {truncatedSummary}
             </p>
           )}
+
+          {/* Evaluation evidence as tagged elements grouped by category */}
+          {candidate.evaluationEvidence &&
+            candidate.evaluationEvidence.length > 0 && (
+              <EvidenceTags evidence={candidate.evaluationEvidence} />
+            )}
 
           {/* Footer: confidence + actions */}
           <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
@@ -131,6 +190,7 @@ export function CandidateCard({ candidate }: CandidateCardProps) {
                 size="sm"
                 className="h-7 gap-1 rounded-[8px] px-2 text-xs text-muted-foreground hover:text-indigo-600"
                 aria-label={`View profile for ${candidate.name}`}
+                render={<Link href={`/projects/${projectId}/candidates/${candidate.id}`} />}
               >
                 <Eye className="h-3.5 w-3.5" aria-hidden="true" />
                 View Profile

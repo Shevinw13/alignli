@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { AccessibleDialog } from "@/components/shared/accessible-dialog";
+import { useAutoFocus } from "@/lib/hooks/use-auto-focus";
 import { cn } from "@/lib/utils";
 import { Send } from "lucide-react";
 import type { OrgRole } from "../types";
@@ -45,6 +46,19 @@ export function InviteMemberDialog({
   const [role, setRole] = useState<OrgRole>("Hiring_Manager");
   const [errors, setErrors] = useState<{ email?: string; role?: string }>({});
   const [isSending, setIsSending] = useState(false);
+  const formRef = useAutoFocus<HTMLFormElement>();
+
+  function validateEmail(): string | undefined {
+    if (!email.trim()) return "Email address is required";
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim()))
+      return "Please enter a valid email address";
+    return undefined;
+  }
+
+  function handleEmailBlur() {
+    const error = validateEmail();
+    setErrors((prev) => ({ ...prev, email: error }));
+  }
 
   function validate(): boolean {
     const newErrors: { email?: string; role?: string } = {};
@@ -94,7 +108,7 @@ export function InviteMemberDialog({
       title="Invite Team Member"
       description="Send an invitation email to add a new member to your organization. Invitations expire after 7 days."
     >
-      <form onSubmit={handleSubmit} noValidate className="space-y-5">
+      <form ref={formRef} onSubmit={handleSubmit} noValidate className="space-y-5">
         {/* Email Input */}
         <div>
           <label
@@ -111,6 +125,7 @@ export function InviteMemberDialog({
               setEmail(e.target.value);
               if (errors.email) setErrors((prev) => ({ ...prev, email: undefined }));
             }}
+            onBlur={handleEmailBlur}
             placeholder="colleague@company.com"
             className={cn(
               "mt-1.5 w-full rounded-[12px] border px-3 py-2.5 text-sm text-navy",

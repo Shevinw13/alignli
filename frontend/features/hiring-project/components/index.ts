@@ -7,3 +7,5 @@ export { CandidatesTab } from "./candidates-tab";
 export { CandidateCard, type CandidateCardData, type ConfidenceLevel } from "./candidate-card";
 export { ScoreIndicator } from "./score-indicator";
 export { SettingsTab } from "./settings-tab";
+export { ProjectDetailSkeleton } from "./project-detail-skeleton";
+export { CandidatesTabSkeleton } from "./candidates-tab-skeleton";
