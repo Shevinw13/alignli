@@ -1,9 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { Plus, ArrowRight, Sparkles, Upload, Users, ChevronRight } from "lucide-react";
+import { Plus, FileText, Users, Sparkles, CheckCircle2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { ProjectCard } from "@/features/home/components/project-card";
+import { ClosedProjectCard } from "@/features/home/components/closed-project-card";
 import { EmptyState } from "@/features/home/components/empty-state";
 import { LoadingWrapper } from "@/components/shared/loading-wrapper";
 import { HomePageSkeleton } from "@/features/home/components/home-page-skeleton";
@@ -15,12 +17,23 @@ import { useProjects } from "@/lib/hooks";
 export default function HomePage() {
   const { data, isLoading, error, refetch } = useProjects();
 
+  // Derive open vs closed projects from API response
   const projects = data?.items ?? [];
   const openProjects = projects
     .filter((p) => p.state !== "Filled" && p.state !== "Cancelled")
-    .sort((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime());
+    .sort(
+      (a, b) =>
+        new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime()
+    );
+  const closedProjects = projects
+    .filter((p) => p.state === "Filled" || p.state === "Cancelled")
+    .sort(
+      (a, b) =>
+        new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime()
+    );
 
-  const hasProjects = openProjects.length > 0;
+  const hasProjects = openProjects.length > 0 || closedProjects.length > 0;
+  const showGettingStarted = openProjects.length > 0 && openProjects.length <= 3;
 
   if (error) {
     return (
@@ -34,178 +47,174 @@ export default function HomePage() {
 
   return (
     <LoadingWrapper isLoading={isLoading} skeleton={<HomePageSkeleton />}>
-      {!hasProjects ? (
-        <EmptyState />
-      ) : (
-        <div className="space-y-10">
-          {/* ─── Personalized Header ─── */}
-          <header className="space-y-1">
-            <h1 className="text-2xl font-bold tracking-tight text-navy">
-              Good {getGreeting()}.
-            </h1>
-            <p className="text-[15px] text-gray-500">
-              You have {openProjects.length} active hiring {openProjects.length === 1 ? "project" : "projects"}.
-            </p>
-          </header>
+      <div className="space-y-8">
+        {/* Empty state */}
+        {!hasProjects && <EmptyState />}
 
-          {/* ─── AI Brief ─── */}
-          <section className="rounded-2xl border border-gray-100 bg-white p-6">
-            <div className="flex items-start gap-3">
-              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-[#0099CC]/10 to-[#0099CC]/5">
-                <Sparkles className="h-4 w-4 text-[#0099CC]" />
-              </div>
-              <div className="min-w-0 flex-1">
-                <h2 className="text-sm font-semibold text-navy">AI Hiring Brief</h2>
-                <p className="mt-2 text-sm leading-relaxed text-gray-600">
-                  {openProjects.length === 1
-                    ? `Your project "${openProjects[0].title}" is in ${openProjects[0].state} state. Upload resumes to get AI-powered candidate rankings and insights.`
-                    : `You have ${openProjects.length} active projects. Upload resumes to any project to get AI-powered candidate rankings.`}
-                </p>
-                <div className="mt-4">
-                  <Link
-                    href={`/projects/${openProjects[0].id}`}
-                    className="inline-flex items-center gap-1.5 text-sm font-medium text-[#0099CC] hover:text-[#007aa3] transition-colors"
-                  >
-                    Continue with {openProjects[0].title}
-                    <ArrowRight className="h-3.5 w-3.5" />
-                  </Link>
+        {/* Dashboard with projects */}
+        {hasProjects && (
+          <>
+            {/* Compact header with gradient */}
+            <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-[#0099CC] to-[#00789e] p-5 md:p-6">
+              <div className="pointer-events-none absolute -right-16 -top-16 h-56 w-56 rounded-full bg-white/10 blur-3xl" />
+              <div className="pointer-events-none absolute bottom-0 left-1/3 h-24 w-24 rounded-full bg-white/5 blur-2xl" />
+
+              <div className="relative flex items-center justify-between gap-4">
+                <div>
+                  <h1 className="text-lg font-bold text-white">
+                    Hiring Projects
+                  </h1>
+                  <p className="mt-0.5 text-sm text-white/70">
+                    {openProjects.length} active{closedProjects.length > 0 ? ` · ${closedProjects.length} completed` : ""}
+                  </p>
                 </div>
+                <Button
+                  className={cn(
+                    "inline-flex items-center gap-1.5",
+                    "bg-white text-[#0099CC] hover:bg-white/90",
+                    "rounded-[10px] px-4 py-2.5 text-sm font-semibold shadow-sm"
+                  )}
+                  render={<Link href="/projects/new" />}
+                >
+                  <Plus className="h-4 w-4" aria-hidden="true" />
+                  New Project
+                </Button>
               </div>
             </div>
-          </section>
 
-          {/* ─── Projects ─── */}
-          <section>
-            <div className="flex items-center justify-between mb-5">
-              <h2 className="text-base font-semibold text-navy">Projects</h2>
-              <Button
-                className="inline-flex items-center gap-1.5 bg-[#0099CC] text-white hover:bg-[#007aa3] rounded-lg px-3.5 py-2 text-sm font-medium shadow-sm"
-                render={<Link href="/projects/new" />}
-              >
-                <Plus className="h-3.5 w-3.5" />
-                New Project
-              </Button>
-            </div>
+            {/* Open projects section */}
+            {openProjects.length > 0 && (
+              <section aria-labelledby="open-projects-heading">
+                <div className="flex items-center gap-2 mb-4">
+                  <h2
+                    id="open-projects-heading"
+                    className="text-base font-semibold text-navy"
+                  >
+                    Active Projects
+                  </h2>
+                  <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-[#e6f7fc] px-1.5 text-xs font-semibold text-[#0099CC]">
+                    {openProjects.length}
+                  </span>
+                </div>
 
-            <div className="space-y-3">
-              {openProjects.map((project) => (
-                <ProjectRow
-                  key={project.id}
-                  id={project.id}
-                  title={project.title}
-                  status={project.state}
-                  updatedAt={project.updated_at}
-                />
-              ))}
-            </div>
-          </section>
+                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                  {openProjects.map((project) => (
+                    <ProjectCard
+                      key={project.id}
+                      id={project.id}
+                      title={project.title}
+                      status={project.state}
+                      candidateCount={0}
+                      topMatchesCount={0}
+                      updatedAt={project.updated_at}
+                    />
+                  ))}
+                </div>
+              </section>
+            )}
 
-          {/* ─── Progress ─── */}
-          <section className="rounded-2xl border border-gray-100 bg-white p-6">
-            <h3 className="text-sm font-semibold text-navy">Hiring Progress</h3>
-            <div className="mt-4 space-y-3">
-              <ProgressStep done label="Project created" />
-              <ProgressStep done={openProjects.some(p => p.state !== "Draft")} label="Job description added" />
-              <ProgressStep done={false} label="Resumes uploaded" />
-              <ProgressStep done={false} label="AI rankings generated" />
-              <ProgressStep done={false} label="Interviews scheduled" />
-            </div>
-          </section>
-        </div>
-      )}
+            {/* Getting Started tips — shown when user is new (≤3 projects) */}
+            {showGettingStarted && (
+              <section className="rounded-xl border border-[#d4eef2] bg-gradient-to-br from-[#f0fafb] to-white p-5 md:p-6">
+                <h3 className="text-sm font-semibold text-navy">How BTS works</h3>
+                <p className="mt-1 text-xs text-muted-foreground">Complete these steps to find your best candidates</p>
+
+                <div className="mt-4 grid gap-3 sm:grid-cols-3">
+                  <GettingStartedStep
+                    number={1}
+                    title="Define your role"
+                    description="Add title, requirements, and paste your job description"
+                    icon={FileText}
+                    done={openProjects.length > 0}
+                  />
+                  <GettingStartedStep
+                    number={2}
+                    title="Upload candidates"
+                    description="Upload PDFs, paste text, or add LinkedIn profiles"
+                    icon={Users}
+                    done={false}
+                  />
+                  <GettingStartedStep
+                    number={3}
+                    title="Get ranked results"
+                    description="AI scores and ranks every candidate against your criteria"
+                    icon={Sparkles}
+                    done={false}
+                  />
+                </div>
+              </section>
+            )}
+
+            {/* Closed projects section */}
+            {closedProjects.length > 0 && (
+              <section aria-labelledby="closed-projects-heading">
+                <h2
+                  id="closed-projects-heading"
+                  className="text-base font-semibold text-navy mb-3"
+                >
+                  Completed
+                </h2>
+
+                <div className="space-y-2">
+                  {closedProjects.map((project) => (
+                    <ClosedProjectCard
+                      key={project.id}
+                      id={project.id}
+                      title={project.title}
+                      filledDate={project.updated_at}
+                    />
+                  ))}
+                </div>
+              </section>
+            )}
+          </>
+        )}
+      </div>
     </LoadingWrapper>
   );
 }
 
-// ─── Sub-components ──────────────────────────────────────────────────────────
+// ─── Getting Started Step ────────────────────────────────────────────────────
 
-function getGreeting(): string {
-  const hour = new Date().getHours();
-  if (hour < 12) return "morning";
-  if (hour < 17) return "afternoon";
-  return "evening";
-}
-
-// ─── Project Row ─────────────────────────────────────────────────────────────
-
-const statusDot: Record<string, string> = {
-  Draft: "bg-gray-400",
-  Active: "bg-emerald-500",
-  Reviewing: "bg-amber-500",
-  Interviewing: "bg-blue-500",
-  "Offer Extended": "bg-purple-500",
-};
-
-function ProjectRow({ id, title, status, updatedAt }: { id: string; title: string; status: string; updatedAt: string }) {
-  const relTime = formatRelative(updatedAt);
-
+function GettingStartedStep({
+  number,
+  title,
+  description,
+  icon: Icon,
+  done,
+}: {
+  number: number;
+  title: string;
+  description: string;
+  icon: typeof FileText;
+  done: boolean;
+}) {
   return (
-    <Link
-      href={`/projects/${id}`}
-      className={cn(
-        "group flex items-center gap-4 rounded-xl border border-gray-100 bg-white px-5 py-4",
-        "hover:border-[#0099CC]/20 hover:shadow-sm transition-all duration-150",
-        "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0099CC]"
-      )}
-    >
-      {/* Status indicator */}
-      <div className={cn("h-2.5 w-2.5 rounded-full shrink-0", statusDot[status] ?? "bg-gray-400")} />
-
-      {/* Content */}
-      <div className="min-w-0 flex-1">
-        <p className="text-sm font-medium text-navy group-hover:text-[#0099CC] transition-colors truncate">
-          {title}
-        </p>
-        <p className="mt-0.5 text-xs text-gray-400">
-          {status} · {relTime}
-        </p>
-      </div>
-
-      {/* Action hint */}
-      <ChevronRight className="h-4 w-4 shrink-0 text-gray-300 group-hover:text-[#0099CC] transition-colors" />
-    </Link>
-  );
-}
-
-// ─── Progress Step ───────────────────────────────────────────────────────────
-
-function ProgressStep({ done, label }: { done: boolean; label: string }) {
-  return (
-    <div className="flex items-center gap-3">
+    <div className={cn(
+      "flex gap-3 rounded-lg p-3 transition-colors",
+      done ? "bg-white" : "bg-white"
+    )}>
       <div className={cn(
-        "flex h-5 w-5 items-center justify-center rounded-full border",
-        done
-          ? "border-emerald-500 bg-emerald-50"
-          : "border-gray-200 bg-white"
+        "flex h-8 w-8 shrink-0 items-center justify-center rounded-lg",
+        done ? "bg-emerald-50" : "bg-[#e6f7fc]"
       )}>
-        {done && (
-          <svg className="h-3 w-3 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-          </svg>
+        {done ? (
+          <CheckCircle2 className="h-4 w-4 text-emerald-500" aria-hidden="true" />
+        ) : (
+          <Icon className="h-4 w-4 text-[#0099CC]" aria-hidden="true" />
         )}
       </div>
-      <span className={cn(
-        "text-sm",
-        done ? "text-gray-500 line-through" : "text-navy"
-      )}>
-        {label}
-      </span>
+      <div className="min-w-0">
+        <p className={cn(
+          "text-sm font-medium",
+          done ? "text-emerald-700 line-through" : "text-navy"
+        )}>
+          {title}
+        </p>
+        <p className="mt-0.5 text-[11px] leading-relaxed text-gray-500">
+          {description}
+        </p>
+      </div>
     </div>
   );
-}
-
-// ─── Helpers ─────────────────────────────────────────────────────────────────
-
-function formatRelative(dateStr: string): string {
-  const date = new Date(dateStr);
-  const now = new Date();
-  const diffMs = now.getTime() - date.getTime();
-  const diffMins = Math.floor(diffMs / 60000);
-  if (diffMins < 1) return "just now";
-  if (diffMins < 60) return `${diffMins}m ago`;
-  const diffHours = Math.floor(diffMins / 60);
-  if (diffHours < 24) return `${diffHours}h ago`;
-  const diffDays = Math.floor(diffHours / 24);
-  if (diffDays < 7) return `${diffDays}d ago`;
-  return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
 }
