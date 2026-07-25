@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Plus, FileText, Users, Sparkles, CheckCircle2 } from "lucide-react";
+import { Plus, FileText, Users, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { ProjectCard } from "@/features/home/components/project-card";
@@ -82,6 +82,38 @@ export default function HomePage() {
               </div>
             </div>
 
+            {/* Getting Started tips — shown when user is new (≤3 projects) */}
+            {showGettingStarted && (
+              <section className="rounded-xl border border-[#d4eef2] bg-gradient-to-br from-[#f0fafb] to-white p-5 md:p-6">
+                <h3 className="text-sm font-semibold text-navy">How BTS works</h3>
+                <p className="mt-1 text-xs text-muted-foreground">Three simple steps to find your best candidates</p>
+
+                <div className="mt-4 grid gap-3 sm:grid-cols-3">
+                  <GettingStartedStep
+                    number={1}
+                    title="Define"
+                    description="Set your role, requirements, and what matters most"
+                    icon={FileText}
+                    done={false}
+                  />
+                  <GettingStartedStep
+                    number={2}
+                    title="Upload"
+                    description="Add resumes, paste text, or import LinkedIn profiles"
+                    icon={Users}
+                    done={false}
+                  />
+                  <GettingStartedStep
+                    number={3}
+                    title="Decide"
+                    description="AI ranks candidates and shows you exactly why"
+                    icon={Sparkles}
+                    done={false}
+                  />
+                </div>
+              </section>
+            )}
+
             {/* Open projects section */}
             {openProjects.length > 0 && (
               <section aria-labelledby="open-projects-heading">
@@ -109,38 +141,6 @@ export default function HomePage() {
                       updatedAt={project.updated_at}
                     />
                   ))}
-                </div>
-              </section>
-            )}
-
-            {/* Getting Started tips — shown when user is new (≤3 projects) */}
-            {showGettingStarted && (
-              <section className="rounded-xl border border-[#d4eef2] bg-gradient-to-br from-[#f0fafb] to-white p-5 md:p-6">
-                <h3 className="text-sm font-semibold text-navy">How BTS works</h3>
-                <p className="mt-1 text-xs text-muted-foreground">Complete these steps to find your best candidates</p>
-
-                <div className="mt-4 grid gap-3 sm:grid-cols-3">
-                  <GettingStartedStep
-                    number={1}
-                    title="Define your role"
-                    description="Add title, requirements, and paste your job description"
-                    icon={FileText}
-                    done={openProjects.length > 0}
-                  />
-                  <GettingStartedStep
-                    number={2}
-                    title="Upload candidates"
-                    description="Upload PDFs, paste text, or add LinkedIn profiles"
-                    icon={Users}
-                    done={false}
-                  />
-                  <GettingStartedStep
-                    number={3}
-                    title="Get ranked results"
-                    description="AI scores and ranks every candidate against your criteria"
-                    icon={Sparkles}
-                    done={false}
-                  />
                 </div>
               </section>
             )}
@@ -181,7 +181,6 @@ function GettingStartedStep({
   title,
   description,
   icon: Icon,
-  done,
 }: {
   number: number;
   title: string;
@@ -190,27 +189,12 @@ function GettingStartedStep({
   done: boolean;
 }) {
   return (
-    <div className={cn(
-      "flex gap-3 rounded-lg p-3 transition-colors",
-      done ? "bg-white" : "bg-white"
-    )}>
-      <div className={cn(
-        "flex h-8 w-8 shrink-0 items-center justify-center rounded-lg",
-        done ? "bg-emerald-50" : "bg-[#e6f7fc]"
-      )}>
-        {done ? (
-          <CheckCircle2 className="h-4 w-4 text-emerald-500" aria-hidden="true" />
-        ) : (
-          <Icon className="h-4 w-4 text-[#0099CC]" aria-hidden="true" />
-        )}
+    <div className="flex gap-3 rounded-lg p-3">
+      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#e6f7fc]">
+        <Icon className="h-4 w-4 text-[#0099CC]" aria-hidden="true" />
       </div>
       <div className="min-w-0">
-        <p className={cn(
-          "text-sm font-medium",
-          done ? "text-emerald-700 line-through" : "text-navy"
-        )}>
-          {title}
-        </p>
+        <p className="text-sm font-medium text-navy">{title}</p>
         <p className="mt-0.5 text-[11px] leading-relaxed text-gray-500">
           {description}
         </p>
