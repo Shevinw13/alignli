@@ -16,7 +16,7 @@ export default function DashboardLayout({
 
           {/* Main content area — offset by sidebar width on desktop */}
           <main
-            className="min-h-screen lg:ml-64"
+            className="min-h-screen lg:ml-56"
             id="main-content"
           >
             <div className="mx-auto max-w-[1280px] px-4 py-4 md:px-8 md:py-8">

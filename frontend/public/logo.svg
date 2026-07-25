@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" fill="none">
+  <!-- Blue dot (head) -->
+  <circle cx="28" cy="8" r="5" fill="#0099CC"/>
+  <!-- Person figure (body/arms) -->
+  <path d="M20 44C20 44 16 32 16 28C16 24 18 20 22 18C24 17 26 16 28 16C30 16 32 17 34 18C38 20 40 24 40 28C40 32 36 44 36 44" stroke="#333333" stroke-width="3" stroke-linecap="round" fill="none"/>
+  <path d="M22 18C18 20 14 24 12 28" stroke="#333333" stroke-width="3" stroke-linecap="round" fill="none"/>
+  <path d="M34 18C38 20 42 24 44 28" stroke="#333333" stroke-width="3" stroke-linecap="round" fill="none"/>
+</svg>

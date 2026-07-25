@@ -100,7 +100,7 @@ export function Sidebar() {
           "shadow-[0_4px_4px_rgba(0,0,0,0.05)]",
           "transition-all duration-[var(--duration-normal)] ease-[var(--ease-out)]",
           // Width: collapsed vs expanded
-          collapsed ? "w-16" : "w-64",
+          collapsed ? "w-16" : "w-56",
           // Mobile: hidden by default, shown when open
           mobileOpen ? "translate-x-0" : "-translate-x-full",
           // Desktop: always visible
@@ -116,14 +116,12 @@ export function Sidebar() {
               "flex items-center gap-2 interactive",
               collapsed && "justify-center"
             )}
-            aria-label="Alignli home"
+            aria-label="BTS home"
           >
-            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-[8px] bg-indigo-600 text-white font-bold text-sm">
-              A
-            </div>
+            <img src="/logo.jpeg" alt="BTS" className="h-8 w-8 shrink-0 rounded-[4px]" />
             {!collapsed && (
               <span className="text-lg font-bold text-navy">
-                Alignli
+                BTS
               </span>
             )}
           </Link>
@@ -131,7 +129,7 @@ export function Sidebar() {
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 px-3 py-4 space-y-1" aria-label="Sidebar navigation">
+        <nav className="flex-1 px-3 py-3 space-y-0.5" aria-label="Sidebar navigation">
           {navItems.map((item) => {
             const isActive =
               item.href === "/"
@@ -143,18 +141,18 @@ export function Sidebar() {
                 key={item.href}
                 href={item.href}
                 className={cn(
-                  "flex items-center gap-3 rounded-[12px] px-3 py-2.5",
+                  "flex items-center gap-2.5 rounded-lg px-3 py-2",
                   "text-sm font-medium interactive",
                   "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600",
                   isActive
-                    ? "bg-[#EEF2FF] text-[#4F46E5]"
-                    : "text-navy hover:bg-indigo-50 hover:text-indigo-600",
+                    ? "bg-gray-100 text-navy font-semibold"
+                    : "text-gray-600 hover:bg-gray-50 hover:text-navy",
                   collapsed && "justify-center px-2"
                 )}
                 aria-current={isActive ? "page" : undefined}
                 title={collapsed ? item.label : undefined}
               >
-                <item.icon className="h-5 w-5 shrink-0" />
+                <item.icon className={cn("h-[18px] w-[18px] shrink-0", isActive ? "text-navy" : "text-gray-400")} />
                 {!collapsed && <span>{item.label}</span>}
               </Link>
             );

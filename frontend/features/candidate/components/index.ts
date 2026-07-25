@@ -12,6 +12,7 @@ export { ProjectsSection } from "./projects-section";
 export { AwardsSection } from "./awards-section";
 export { LanguagesSection } from "./languages-section";
 export { InterviewQuestions } from "./interview-questions";
+export { InterviewScorecard } from "./interview-scorecard";
 export { NotesSection } from "./notes-section";
 export { ResumeViewer } from "./resume-viewer";
 export { SectionCard } from "./section-card";

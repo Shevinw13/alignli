@@ -2,6 +2,7 @@
 
 import { useState, useRef, useCallback } from "react";
 import { Upload, X, Plus, AlertCircle, Loader2, FileText } from "lucide-react";
+import { BiasCheckCard } from "./bias-check-card";
 import { Button } from "@/components/ui/button";
 import { CharacterCounter } from "@/components/ui/character-counter";
 import { useAutoFocus } from "@/lib/hooks/use-auto-focus";
@@ -98,36 +99,66 @@ interface APIExtractionResponse {
   confidence: string;
 }
 
-async function mockExtractJobDescription(
+async function extractJobDescription(
   text: string,
   _projectId?: string
 ): Promise<APIExtractionResponse> {
-  // Simulate API latency
-  await new Promise((resolve) => setTimeout(resolve, 1500));
+  const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
+  
+  try {
+    const response = await fetch(`${API_URL}/api/v1/ai/extract-jd`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ text }),
+    });
 
-  // Simulate extraction based on text content
+    if (!response.ok) {
+      throw new Error(`Extraction failed: ${response.status}`);
+    }
+
+    const data = await response.json();
+    return data as APIExtractionResponse;
+  } catch (error) {
+    // Fallback: if backend AI fails, return a basic extraction from the text
+    console.error("AI extraction failed, using fallback:", error);
+    return fallbackExtraction(text);
+  }
+}
+
+/** Fallback extraction when AI is unavailable — does basic keyword matching */
+function fallbackExtraction(text: string): APIExtractionResponse {
+  const lower = text.toLowerCase();
+  
+  // Extract skills by looking for common tech keywords
+  const techKeywords = [
+    "react", "typescript", "javascript", "python", "java", "node.js", "aws", 
+    "docker", "kubernetes", "sql", "postgresql", "mongodb", "graphql", "rest",
+    "git", "agile", "scrum", "ci/cd", "html", "css", "tailwind", "next.js",
+    "vue", "angular", "go", "rust", "c++", "swift", "kotlin", "flutter",
+    "terraform", "linux", "redis", "elasticsearch", "kafka", "rabbitmq",
+  ];
+  
+  const foundSkills = techKeywords.filter(k => lower.includes(k));
+  const required = foundSkills.slice(0, Math.min(5, foundSkills.length));
+  const preferred = foundSkills.slice(5, Math.min(8, foundSkills.length));
+
+  // Extract years of experience
+  const yearsMatch = text.match(/(\d+)\+?\s*(?:years?|yrs?)/i);
+  const years = yearsMatch ? parseInt(yearsMatch[1], 10) : null;
+
   return {
     categories: {
-      required_skills: [
-        { name: "React", description: "Modern React with hooks" },
-        { name: "TypeScript", description: "Strong typing skills" },
-        { name: "Node.js", description: "Backend experience" },
-      ],
-      preferred_skills: [
-        { name: "GraphQL", description: "API design" },
-        { name: "AWS", description: "Cloud services" },
-      ],
-      education: [
-        { level: "Bachelor's", field: "Computer Science" },
-      ],
-      years_experience: { minimum: 3, preferred: 5 },
-      certifications: [
-        { name: "AWS Solutions Architect", required_or_preferred: "preferred" },
-      ],
-      location_requirements: { location: "San Francisco, CA", remote_policy: "Hybrid" },
-      keywords: ["full-stack", "agile", "microservices", "CI/CD"],
+      required_skills: required.map(s => ({ name: s.charAt(0).toUpperCase() + s.slice(1), description: "" })),
+      preferred_skills: preferred.map(s => ({ name: s.charAt(0).toUpperCase() + s.slice(1), description: "" })),
+      education: lower.includes("degree") || lower.includes("bachelor") 
+        ? [{ level: "Bachelor's", field: "relevant field" }] 
+        : [],
+      years_experience: years ? { minimum: years, preferred: years + 2 } : null,
+      certifications: [],
+      location_requirements: null,
+      keywords: foundSkills.slice(0, 6),
     },
-    confidence: "High",
+    confidence: "Medium",
   };
 }
 
@@ -315,7 +346,7 @@ export function JobDescriptionStep({
     setStepState("loading");
 
     try {
-      const response = await mockExtractJobDescription(textToExtract, projectId);
+      const response = await extractJobDescription(textToExtract, projectId);
       const extracted = transformAPIResponse(response);
 
       if (getTotalItems(extracted) === 0) {
@@ -437,6 +468,7 @@ export function JobDescriptionStep({
 
       {stepState === "review" && (
         <ReviewState
+          rawText={text}
           categories={categories}
           onRemoveItem={handleRemoveItem}
           onEditItem={handleEditItem}
@@ -704,6 +736,7 @@ function LoadingState() {
 // --- Review State Component ---
 
 interface ReviewStateProps {
+  rawText: string;
   categories: ExtractedCategories;
   onRemoveItem: (category: keyof ExtractedCategories, itemId: string) => void;
   onEditItem: (
@@ -718,6 +751,7 @@ interface ReviewStateProps {
 }
 
 function ReviewState({
+  rawText,
   categories,
   onRemoveItem,
   onEditItem,
@@ -728,6 +762,9 @@ function ReviewState({
 }: ReviewStateProps) {
   return (
     <div className="space-y-4">
+      {/* Bias Check */}
+      <BiasCheckCard text={rawText} />
+
       <div className="flex items-center justify-between">
         <p className="text-sm text-muted-foreground">
           Review and edit the extracted information below.

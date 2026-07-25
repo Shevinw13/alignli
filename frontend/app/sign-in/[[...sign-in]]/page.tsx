@@ -11,7 +11,7 @@ export default function SignInPage() {
             Welcome back
           </h1>
           <p className="mt-2 text-body text-text-secondary">
-            Sign in to your Alignli account
+            Sign in to your BTS account
           </p>
         </div>
         <SignIn

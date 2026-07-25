@@ -11,7 +11,7 @@ const plusJakartaSans = Plus_Jakarta_Sans({
 });
 
 export const metadata: Metadata = {
-  title: "Alignli - AI Hiring Copilot",
+  title: "BTS - BrightWell Talent Solutions",
   description:
     "AI-powered hiring copilot that helps hiring managers decide who deserves an interview.",
 };

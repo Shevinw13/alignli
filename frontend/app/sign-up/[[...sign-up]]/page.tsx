@@ -11,7 +11,7 @@ export default function SignUpPage() {
             Create your account
           </h1>
           <p className="mt-2 text-body text-text-secondary">
-            Get started with Alignli and set up your organization
+            Get started with BTS and set up your organization
           </p>
         </div>
         <SignUp

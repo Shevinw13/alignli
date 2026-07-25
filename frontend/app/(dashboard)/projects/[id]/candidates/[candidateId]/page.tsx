@@ -21,6 +21,7 @@ import {
   AwardsSection,
   LanguagesSection,
   InterviewQuestions,
+  InterviewScorecard,
   NotesSection,
   ResumeViewer,
 } from "@/features/candidate";
@@ -669,6 +670,15 @@ export default function CandidateProfilePage() {
 
       {/* ─── Notes ──────────────────────────────────────────────────────── */}
       <NotesSection notes={notes} onSave={handleNoteSave} />
+
+      {/* ─── Interview Scorecard ────────────────────────────────────────── */}
+      <InterviewScorecard
+        candidateId={candidate.id}
+        criteria={candidate.scores.map((s) => ({
+          label: s.criteriaLabel,
+          priority: s.category,
+        }))}
+      />
 
       {/* ─── Original Resume ────────────────────────────────────────────── */}
       <ResumeViewer

@@ -14,5 +14,6 @@ export { ProjectsSection } from "./components";
 export { AwardsSection } from "./components";
 export { LanguagesSection } from "./components";
 export { InterviewQuestions } from "./components";
+export { InterviewScorecard } from "./components";
 export { NotesSection } from "./components";
 export { ResumeViewer } from "./components";
