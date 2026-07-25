@@ -7,12 +7,13 @@ import { cn } from "@/lib/utils";
 export interface ProjectCardProps {
   id: string;
   title: string;
-  status: "In Progress" | "Active" | "Reviewing" | "Interviewing" | "Offer Extended";
+  status: string;
   candidateCount: number;
   topMatchesCount: number;
 }
 
 const statusStyles: Record<string, string> = {
+  Draft: "bg-gray-100 text-gray-700",
   "In Progress": "bg-sky-50 text-sky-700",
   Active: "bg-emerald-50 text-emerald-700",
   Reviewing: "bg-amber-50 text-amber-700",
@@ -72,7 +73,7 @@ export function ProjectCard({
             "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
           )}
         >
-          Continue
+          View project
           <ArrowRight className="h-4 w-4" aria-hidden="true" />
         </Link>
       </div>

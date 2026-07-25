@@ -29,9 +29,7 @@ export default function RootLayout({
       <html lang="en" className={`${plusJakartaSans.variable} h-full antialiased`}>
         <body className="min-h-full flex flex-col font-sans">
           <SkipToContent />
-          <main id="main-content" className="flex-1">
-            {children}
-          </main>
+          {children}
         </body>
       </html>
     </ClerkProvider>

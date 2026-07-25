@@ -88,7 +88,7 @@ export default function HomePage() {
                   key={project.id}
                   id={project.id}
                   title={project.title}
-                  status={project.state as "In Progress" | "Active" | "Reviewing" | "Interviewing" | "Offer Extended"}
+                  status={project.state}
                   candidateCount={0}
                   topMatchesCount={0}
                 />
