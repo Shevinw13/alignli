@@ -123,3 +123,29 @@ class HireCandidateResponse(BaseModel):
     project_fillable: bool = Field(
         description="Whether the project can be transitioned to Filled state"
     )
+
+
+# ---------------------------------------------------------------------------
+# Add candidates from text
+# ---------------------------------------------------------------------------
+
+
+class CandidateTextEntry(BaseModel):
+    """A single candidate's text content to be ingested."""
+
+    text: str = Field(..., min_length=1, description="Raw candidate text (resume or LinkedIn)")
+    source: str = Field("paste", description="Source type: 'paste' or 'linkedin'")
+
+
+class AddCandidatesFromTextRequest(BaseModel):
+    """Request body for adding candidates from pasted/scraped text."""
+
+    candidates: list[CandidateTextEntry] = Field(
+        ..., min_length=1, description="List of candidate text entries"
+    )
+
+
+class AddCandidatesFromTextResponse(BaseModel):
+    """Response from adding candidates from text."""
+
+    created: int = Field(description="Number of candidate records created")

@@ -138,3 +138,25 @@ export function analyzeProjectCandidates(
     `/api/v1/projects/${projectId}/analyze`
   );
 }
+
+// ---------------------------------------------------------------------------
+// Add candidates from text
+// ---------------------------------------------------------------------------
+
+export interface AddCandidatesFromTextResponse {
+  created: number;
+}
+
+/**
+ * Add candidates from pasted text (resume or LinkedIn profile content).
+ * Creates candidate records in pending status for later AI analysis.
+ */
+export function addCandidatesFromText(
+  projectId: string,
+  candidates: Array<{ text: string; source: string }>
+): Promise<ApiResponse<AddCandidatesFromTextResponse>> {
+  return api.post<AddCandidatesFromTextResponse>(
+    `/api/v1/projects/${projectId}/candidates/text`,
+    { candidates }
+  );
+}

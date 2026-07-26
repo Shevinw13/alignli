@@ -13,7 +13,7 @@ import { LifecycleBadge, type ProjectState } from "@/features/hiring-project";
 import { RankedResults } from "@/features/hiring-project/components/ranked-results";
 import { ResumeUploadStep } from "@/features/project-creation/components/resume-upload-step";
 import { useProject } from "@/lib/hooks";
-import { analyzeProjectCandidates } from "@/lib/services/candidates";
+import { analyzeProjectCandidates, addCandidatesFromText } from "@/lib/services/candidates";
 import { transitionProjectState } from "@/lib/services/projects";
 
 export default function ProjectDetailPage() {
@@ -45,10 +45,18 @@ export default function ProjectDetailPage() {
     );
   }
 
-  async function handleUploadContinue(_files: File[]) {
+  async function handleUploadContinue(data: { files: File[]; pastedTexts: string[]; linkedinTexts: string[] }) {
     setShowUpload(false);
     setIsReanalyzing(true);
     try {
+      // Save pasted/linkedin candidates to backend
+      const allTexts = [
+        ...data.pastedTexts.map((t) => ({ text: t, source: "paste" })),
+        ...data.linkedinTexts.map((t) => ({ text: t, source: "linkedin" })),
+      ];
+      if (allTexts.length > 0) {
+        await addCandidatesFromText(params.id, allTexts);
+      }
       await analyzeProjectCandidates(params.id);
       setRefreshKey((k) => k + 1);
     } catch (err) {

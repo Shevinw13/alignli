@@ -1,7 +1,10 @@
 """API routes for Candidates.
 
 Endpoints:
-- GET /api/v1/projects/{project_id}/candidates — List candidates (paginated, filtered, sorted by score DESC)
+- GET /api/v1/projects/{project_id}/candidates
+    List candidates (paginated, filtered, sorted by score DESC)
+- POST /api/v1/projects/{project_id}/candidates/text
+    Add candidates from pasted text
 - GET /api/v1/candidates/{candidate_id} — Get full candidate profile
 - POST /api/v1/candidates/{candidate_id}/hire — Mark candidate as hired
 
@@ -19,6 +22,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.database.session import get_db
 from app.core.middleware.auth import AuthenticatedUser, get_current_user
 from app.features.candidates.schemas import (
+    AddCandidatesFromTextRequest,
+    AddCandidatesFromTextResponse,
     CandidateCardResponse,
     CandidateListResponse,
     CandidateProfileResponse,
@@ -26,6 +31,7 @@ from app.features.candidates.schemas import (
     HireCandidateResponse,
 )
 from app.features.candidates.service import CandidateService
+from app.models.candidates import Candidate
 
 # Router for project-scoped candidate list
 candidates_list_router = APIRouter(
@@ -141,3 +147,63 @@ async def hire_candidate(
         candidate=CandidateProfileResponse.model_validate(result.candidate),
         project_fillable=result.project_fillable,
     )
+
+
+@candidates_list_router.post("/text", response_model=AddCandidatesFromTextResponse)
+async def add_candidates_from_text(
+    project_id: UUID,
+    body: AddCandidatesFromTextRequest,
+    user: AuthenticatedUser = Depends(get_current_user),
+    session: AsyncSession = Depends(get_db),
+) -> AddCandidatesFromTextResponse:
+    """Add candidates from pasted text (resume or LinkedIn profile content).
+
+    Creates a Candidate record for each text entry with processing_status='pending'.
+    The full text is stored in parsed_data for later AI analysis.
+    """
+    from app.core.database.session import get_current_org_id, set_current_org_id
+
+    if not get_current_org_id() and user.org_id:
+        set_current_org_id(user.org_id)
+
+    org_id = get_current_org_id()
+    created = 0
+
+    for entry in body.candidates:
+        # Parse name from first non-empty line
+        full_name = _parse_name_from_text(entry.text)
+
+        candidate = Candidate(
+            hiring_project_id=project_id,
+            organization_id=UUID(org_id) if org_id else project_id,
+            full_name=full_name,
+            processing_status="pending",
+            status="active",
+            parsed_data={"raw_text": entry.text, "source": entry.source},
+        )
+        session.add(candidate)
+        created += 1
+
+    await session.commit()
+
+    return AddCandidatesFromTextResponse(created=created)
+
+
+def _parse_name_from_text(text: str) -> Optional[str]:
+    """Extract candidate name from the first line of pasted text."""
+    lines = text.strip().split("\n")
+    for line in lines:
+        trimmed = line.strip()
+        if not trimmed:
+            continue
+        # A name is typically short, not a URL or email
+        if (
+            len(trimmed) <= 60
+            and not trimmed.startswith("http")
+            and not trimmed.startswith("About")
+            and not trimmed.startswith("Experience")
+            and "@" not in trimmed
+        ):
+            return trimmed
+        break
+    return "Unknown"

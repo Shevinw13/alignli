@@ -6,6 +6,7 @@ import { ResumeUploadStep } from "@/features/project-creation/components/resume-
 import { ProcessingStep } from "@/features/project-creation/components/processing-step";
 import { WizardProvider, useWizardContext } from "@/features/project-creation/wizard-context";
 import { createProject, type CreateProjectRequest } from "@/lib/services/projects";
+import { addCandidatesFromText } from "@/lib/services/candidates";
 import { cn } from "@/lib/utils";
 import { ChevronDown, ChevronRight, Upload, FileText } from "lucide-react";
 
@@ -33,6 +34,10 @@ function NewProjectWizard() {
   const [hiringManager, setHiringManager] = useState("");
   const [titleError, setTitleError] = useState("");
   const [jdFileName, setJdFileName] = useState("");
+
+  // Step 2 state (lifted from ResumeUploadStep so shell Continue can access)
+  const [pastedResumes, setPastedResumes] = useState<string[]>([]);
+  const [linkedinTexts, setLinkedinTexts] = useState<string[]>([]);
 
   // Handle JD file upload — read text from .txt, .pdf (text only), .docx
   function handleJDFileUpload(e: React.ChangeEvent<HTMLInputElement>) {
@@ -80,8 +85,8 @@ function NewProjectWizard() {
   }
 
   // Step 2 submit — upload candidates then create project
-  async function handleCandidatesContinue(files: File[]) {
-    setStepData("resumeUpload", files);
+  async function handleCandidatesContinue(data: { files: File[]; pastedTexts: string[]; linkedinTexts: string[] }) {
+    setStepData("resumeUpload", data.files);
 
     try {
       const payload: CreateProjectRequest = {
@@ -90,7 +95,17 @@ function NewProjectWizard() {
         employment_type: (employmentType || "Full-time") as CreateProjectRequest["employment_type"],
       };
       const response = await createProject(payload);
-      setProjectId(response.data.id);
+      const newProjectId = response.data.id;
+      setProjectId(newProjectId);
+
+      // Save pasted/linkedin candidates to backend
+      const allTexts = [
+        ...data.pastedTexts.map((t) => ({ text: t, source: "paste" })),
+        ...data.linkedinTexts.map((t) => ({ text: t, source: "linkedin" })),
+      ];
+      if (allTexts.length > 0 && newProjectId) {
+        await addCandidatesFromText(newProjectId, allTexts);
+      }
     } catch (err: unknown) {
       console.error("Failed to create project:", err);
     }
@@ -103,8 +118,8 @@ function NewProjectWizard() {
     if (currentStep === 1) {
       handleRoleSubmit();
     } else if (currentStep === 2) {
-      // Trigger the upload step's continue logic
-      handleCandidatesContinue([]);
+      // Use the lifted state — shell Continue triggers the same logic as ResumeUploadStep
+      handleCandidatesContinue({ files: [], pastedTexts: pastedResumes, linkedinTexts: linkedinTexts });
     } else {
       nextStep();
     }
@@ -252,7 +267,13 @@ function NewProjectWizard() {
 
       {/* ─── Step 2: Add Candidates ─── */}
       {currentStep === 2 && (
-        <ResumeUploadStep onContinue={handleCandidatesContinue} />
+        <ResumeUploadStep
+          onContinue={handleCandidatesContinue}
+          pastedResumes={pastedResumes}
+          onPastedResumesChange={setPastedResumes}
+          linkedinTexts={linkedinTexts}
+          onLinkedinTextsChange={setLinkedinTexts}
+        />
       )}
 
       {/* ─── Step 3: Processing ─── */}

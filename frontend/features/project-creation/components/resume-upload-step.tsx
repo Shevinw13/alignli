@@ -24,10 +24,18 @@ interface FileEntry {
 }
 
 export interface ResumeUploadStepProps {
-  /** Called when the user clicks "Continue" with accepted file entries */
-  onContinue: (files: File[]) => void;
+  /** Called when the user clicks "Continue" with all candidate data */
+  onContinue: (data: { files: File[]; pastedTexts: string[]; linkedinTexts: string[] }) => void;
   /** Optional project ID for upload path association */
   projectId?: string;
+  /** Lifted state: pasted resumes controlled by parent */
+  pastedResumes?: string[];
+  /** Lifted state: setter for pasted resumes */
+  onPastedResumesChange?: (resumes: string[]) => void;
+  /** Lifted state: linkedin texts controlled by parent */
+  linkedinTexts?: string[];
+  /** Lifted state: setter for linkedin texts */
+  onLinkedinTextsChange?: (texts: string[]) => void;
 }
 
 // --- Helpers ---
@@ -63,17 +71,30 @@ function parseCandidateName(text: string): string {
 
 // --- Component ---
 
-export function ResumeUploadStep({ onContinue, projectId }: ResumeUploadStepProps) {
+export function ResumeUploadStep({
+  onContinue,
+  projectId,
+  pastedResumes: controlledPastedResumes,
+  onPastedResumesChange,
+  linkedinTexts: controlledLinkedinTexts,
+  onLinkedinTextsChange,
+}: ResumeUploadStepProps) {
   const [inputMode, setInputMode] = useState<"upload" | "paste" | "linkedin">("upload");
   const [fileEntries, setFileEntries] = useState<FileEntry[]>([]);
-  const [pastedResumes, setPastedResumes] = useState<string[]>([]);
+  const [internalPastedResumes, setInternalPastedResumes] = useState<string[]>([]);
   const [currentPaste, setCurrentPaste] = useState("");
-  const [linkedinUrls, setLinkedinUrls] = useState<string[]>([]);
+  const [internalLinkedinUrls, setInternalLinkedinUrls] = useState<string[]>([]);
   const [currentUrl, setCurrentUrl] = useState("");
   const [urlError, setUrlError] = useState("");
   const [isDragOver, setIsDragOver] = useState(false);
   const [batchLimitError, setBatchLimitError] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  // Use controlled state if provided, otherwise internal state
+  const pastedResumes = controlledPastedResumes ?? internalPastedResumes;
+  const setPastedResumes = onPastedResumesChange ?? setInternalPastedResumes;
+  const linkedinUrls = controlledLinkedinTexts ?? internalLinkedinUrls;
+  const setLinkedinUrls = onLinkedinTextsChange ?? setInternalLinkedinUrls;
 
   const acceptedFiles = fileEntries.filter((f) => f.status === "accepted");
   const rejectedFiles = fileEntries.filter((f) => f.status === "rejected");
@@ -207,19 +228,19 @@ export function ResumeUploadStep({ onContinue, projectId }: ResumeUploadStepProp
     const accepted = fileEntries
       .filter((f) => f.status === "accepted")
       .map((f) => f.file);
-    onContinue(accepted);
+    onContinue({ files: accepted, pastedTexts: pastedResumes, linkedinTexts: linkedinUrls });
   };
 
   // --- Paste handlers ---
   const handleAddPaste = () => {
     const trimmed = currentPaste.trim();
     if (trimmed.length < 50) return;
-    setPastedResumes((prev) => [...prev, trimmed]);
+    setPastedResumes([...pastedResumes, trimmed]);
     setCurrentPaste("");
   };
 
   const handleRemovePaste = (index: number) => {
-    setPastedResumes((prev) => prev.filter((_, i) => i !== index));
+    setPastedResumes(pastedResumes.filter((_, i) => i !== index));
   };
 
   // --- LinkedIn handlers ---
@@ -230,12 +251,12 @@ export function ResumeUploadStep({ onContinue, projectId }: ResumeUploadStepProp
       return;
     }
     setUrlError("");
-    setLinkedinUrls((prev) => [...prev, trimmed]);
+    setLinkedinUrls([...linkedinUrls, trimmed]);
     setCurrentUrl("");
   };
 
   const handleRemoveLinkedin = (index: number) => {
-    setLinkedinUrls((prev) => prev.filter((_, i) => i !== index));
+    setLinkedinUrls(linkedinUrls.filter((_, i) => i !== index));
   };
 
   return (
