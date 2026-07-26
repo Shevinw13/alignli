@@ -137,7 +137,7 @@ async def delete_project(
     project_id: UUID,
     user: AuthenticatedUser = Depends(get_current_user),
     service: HiringProjectService = Depends(_get_service),
-) -> None:
+):
     """Soft-delete a hiring project."""
     from app.core.database.session import get_current_org_id, set_current_org_id
 
