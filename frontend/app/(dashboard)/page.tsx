@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Plus, FileText, Users, Sparkles, CheckCircle2, MoreHorizontal } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -12,7 +12,7 @@ import { LoadingWrapper } from "@/components/shared/loading-wrapper";
 import { HomePageSkeleton } from "@/features/home/components/home-page-skeleton";
 import { NetworkErrorCard } from "@/components/shared/network-error-card";
 import { useProjects } from "@/lib/hooks";
-import { transitionProjectState } from "@/lib/services/projects";
+import { transitionProjectState, getHiringStats } from "@/lib/services/projects";
 
 export default function HomePage() {
   const { data, isLoading, error, refetch } = useProjects();
@@ -29,9 +29,14 @@ export default function HomePage() {
   const hasProjects = openProjects.length > 0 || closedProjects.length > 0;
   const showGettingStarted = projects.length <= 3;
 
-  // Compute metrics (placeholder — will be powered by real API data)
-  const totalCandidates = 0; // TODO: fetch from API
-  const avgScore = 0; // TODO: compute from candidate scores
+  // Fetch real metrics from API
+  const [stats, setStats] = useState({ total_screened: 0, avg_score: 0 });
+  useEffect(() => {
+    if (!hasProjects) return;
+    getHiringStats()
+      .then((res) => setStats(res.data))
+      .catch(() => {}); // Silently fail — metrics are non-critical
+  }, [hasProjects]);
 
   async function handleMarkFilled(projectId: string) {
     setClosingId(projectId);
@@ -102,12 +107,12 @@ export default function HomePage() {
               <div className="relative mt-5 grid grid-cols-3 gap-3">
                 <MetricTile
                   label="Screened"
-                  value={totalCandidates}
+                  value={stats.total_screened}
                   tooltip="Total candidates analyzed by AI across all your jobs"
                 />
                 <MetricTile
                   label="Avg Score"
-                  value={avgScore > 0 ? `${avgScore}%` : "—"}
+                  value={stats.avg_score > 0 ? `${stats.avg_score}%` : "—"}
                   tooltip="Average AI match score across all scored candidates (0-100%)"
                 />
                 <MetricTile

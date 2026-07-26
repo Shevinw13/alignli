@@ -130,3 +130,50 @@ async def transition_project_state(
         actor_role=user.role,
     )
     return ProjectResponse.model_validate(project)
+
+
+@router.get("/stats/overview")
+async def get_hiring_stats(
+    user: AuthenticatedUser = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+) -> dict:
+    """Get aggregate hiring stats for the dashboard.
+
+    Returns total candidates screened and average match score
+    across all projects in the organization.
+    """
+    from sqlalchemy import select, func
+    from app.core.database.session import get_current_org_id, set_current_org_id
+    from app.models.candidates import Candidate
+    from app.models.hiring_projects import HiringProject
+
+    if not get_current_org_id() and user.org_id:
+        set_current_org_id(user.org_id)
+
+    org_id = get_current_org_id()
+
+    # Get all project IDs for this org
+    project_ids_query = (
+        select(HiringProject.id)
+        .where(HiringProject.organization_id == org_id)
+        .where(HiringProject.deleted_at.is_(None))
+    )
+
+    # Count total candidates and compute avg score
+    stats_query = (
+        select(
+            func.count(Candidate.id).label("total_screened"),
+            func.avg(Candidate.match_score).label("avg_score"),
+        )
+        .where(Candidate.hiring_project_id.in_(project_ids_query))
+        .where(Candidate.deleted_at.is_(None))
+        .where(Candidate.processing_status == "completed")
+    )
+
+    result = await db.execute(stats_query)
+    row = result.one()
+
+    return {
+        "total_screened": row.total_screened or 0,
+        "avg_score": round(float(row.avg_score), 1) if row.avg_score else 0,
+    }

@@ -84,3 +84,19 @@ export function transitionProjectState(
 ): Promise<ApiResponse<Project>> {
   return api.patch<Project>(`/api/v1/projects/${projectId}/state`, { state });
 }
+
+// ---------------------------------------------------------------------------
+// Stats
+// ---------------------------------------------------------------------------
+
+export interface HiringStats {
+  total_screened: number;
+  avg_score: number;
+}
+
+/**
+ * Get aggregate hiring stats (total screened, avg score).
+ */
+export function getHiringStats(): Promise<ApiResponse<HiringStats>> {
+  return api.get<HiringStats>("/api/v1/projects/stats/overview");
+}
