@@ -506,7 +506,7 @@ export function ResumeUploadStep({
       {inputMode === "linkedin" && (
         <div className="space-y-4">
           <p className="text-sm text-muted-foreground">
-            Copy a candidate's LinkedIn profile page content and paste it here. Go to their profile, select all (Cmd+A), copy (Cmd+C), and paste below.
+            <strong>Don't paste the URL</strong> — paste the profile <em>content</em>. Open their LinkedIn profile → Cmd+A (select all) → Cmd+C (copy) → paste here.
           </p>
           <textarea
             value={currentUrl}
@@ -514,7 +514,7 @@ export function ResumeUploadStep({
               setCurrentUrl(e.target.value);
               if (urlError) setUrlError("");
             }}
-            placeholder="Paste LinkedIn profile content here (name, headline, experience, education, skills...)&#10;&#10;Tip: Open their LinkedIn profile → Cmd+A → Cmd+C → Paste here"
+            placeholder="Paste the full page text here — NOT the URL.&#10;&#10;Steps: Open LinkedIn profile → Cmd+A → Cmd+C → Paste here&#10;&#10;You'll get a wall of text with their name, experience, skills, etc. That's what we need."
             rows={8}
             className={cn(
               "w-full resize-y rounded-[12px] border px-4 py-3 text-sm text-navy",
