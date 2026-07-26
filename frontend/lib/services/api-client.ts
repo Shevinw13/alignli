@@ -33,7 +33,7 @@ export interface ApiResponse<T> {
 let getToken: (() => Promise<string | null>) | null = null;
 
 /**
- * Called once by the ApiClientProvider to inject the Clerk getToken function.
+ * Called once by the AuthProvider to inject the token getter function.
  */
 export function setTokenProvider(provider: () => Promise<string | null>) {
   getToken = provider;
@@ -75,7 +75,7 @@ export async function apiFetch<T = unknown>(
 
   const headers = new Headers(init.headers);
 
-  // Inject Clerk JWT
+  // Inject JWT token
   if (getToken) {
     const token = await getToken();
     if (token) {

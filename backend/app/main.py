@@ -17,6 +17,7 @@ from app.core.middleware.csrf import (
 )
 from app.core.events import events_router
 from app.features.auth.router import router as clerk_webhook_router
+from app.features.auth.login_router import router as login_router
 from app.features.ai.router import router as ai_router
 from app.features.billing.router import router as billing_router
 from app.features.billing.router import webhook_router as billing_webhook_router
@@ -149,6 +150,10 @@ def create_app() -> FastAPI:
     )
     app.include_router(
         clerk_webhook_router,
+        prefix=f"{settings.api_v1_prefix}",
+    )
+    app.include_router(
+        login_router,
         prefix=f"{settings.api_v1_prefix}",
     )
 

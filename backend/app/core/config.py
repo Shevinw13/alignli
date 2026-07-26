@@ -30,10 +30,15 @@ class Settings(BaseSettings):
     # Database (Supabase PostgreSQL)
     database_url: str = "postgresql+asyncpg://localhost:5432/alignli"
 
-    # Clerk Authentication
+    # Clerk Authentication (legacy - kept for webhook router compatibility)
     clerk_secret_key: str = ""
     clerk_publishable_key: str = ""
     clerk_webhook_secret: str = ""
+
+    # Simple Auth (username/password login)
+    auth_username: str = ""
+    auth_password: str = ""
+    auth_secret: str = ""
 
     # Supabase Storage
     supabase_url: str = ""

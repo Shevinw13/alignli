@@ -3,8 +3,9 @@
 import { useState, useCallback, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { FolderKanban, Settings, Globe, Menu, X, ChevronsLeft, ChevronsRight } from "lucide-react";
+import { FolderKanban, Settings, Globe, Menu, X, ChevronsLeft, ChevronsRight, LogOut } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/components/shared/auth-provider";
 
 interface NavItem {
   label: string;
@@ -20,6 +21,7 @@ const navItems: NavItem[] = [
 
 export function Sidebar() {
   const pathname = usePathname();
+  const { logout } = useAuth();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
 
@@ -151,6 +153,25 @@ export function Sidebar() {
             );
           })}
         </nav>
+
+        {/* Logout */}
+        <div className="px-3 pb-2">
+          <button
+            type="button"
+            onClick={logout}
+            className={cn(
+              "flex w-full items-center gap-2.5 rounded-lg px-3 py-2",
+              "text-sm font-medium text-gray-400 transition-colors duration-150",
+              "hover:bg-white/[0.04] hover:text-gray-200",
+              "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-500",
+              collapsed && "justify-center px-2"
+            )}
+            title={collapsed ? "Sign out" : undefined}
+          >
+            <LogOut className="h-[18px] w-[18px] shrink-0 text-gray-500" />
+            {!collapsed && <span>Sign out</span>}
+          </button>
+        </div>
 
         {/* Collapse toggle */}
         <div className="hidden lg:flex items-center justify-center border-t border-white/[0.06] p-3">

@@ -1,3 +1,3 @@
 // Auth feature module
-// Handles sign-in, sign-up, and session management via Clerk
+// Simple username/password authentication
 export {};

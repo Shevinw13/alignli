@@ -1,9 +1,10 @@
 "use client";
 
 import { useEffect, useRef, useState, useCallback } from "react";
-import { useAuth } from "@clerk/nextjs";
 import { SSEClient, SSEEventHandler } from "@/lib/services/sse-client";
 import { SSEConnectionState, SSEEvent } from "@/lib/types/api";
+
+const TOKEN_KEY = "narrowli_token";
 
 export interface UseSSEOptions {
   /** SSE endpoint path (e.g., "/api/v1/projects/123/events") */
@@ -44,7 +45,6 @@ export interface UseSSEReturn {
  */
 export function useSSE(options: UseSSEOptions): UseSSEReturn {
   const { path, onEvent, enabled = true, maxReconnectAttempts } = options;
-  const { getToken } = useAuth();
 
   const [connectionState, setConnectionState] =
     useState<SSEConnectionState>("disconnected");
@@ -64,11 +64,7 @@ export function useSSE(options: UseSSEOptions): UseSSEReturn {
 
     const client = new SSEClient(path, {
       getToken: async () => {
-        try {
-          return await getToken();
-        } catch {
-          return null;
-        }
+        return localStorage.getItem(TOKEN_KEY);
       },
       onEvent: (event) => {
         setLastEvent(event);
@@ -80,7 +76,7 @@ export function useSSE(options: UseSSEOptions): UseSSEReturn {
 
     clientRef.current = client;
     client.connect();
-  }, [path, getToken, maxReconnectAttempts]);
+  }, [path, maxReconnectAttempts]);
 
   const disconnect = useCallback(() => {
     if (clientRef.current) {
