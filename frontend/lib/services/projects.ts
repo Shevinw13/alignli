@@ -85,6 +85,15 @@ export function transitionProjectState(
   return api.patch<Project>(`/api/v1/projects/${projectId}/state`, { state });
 }
 
+/**
+ * Delete (soft-delete) a project.
+ */
+export function deleteProject(
+  projectId: string
+): Promise<ApiResponse<void>> {
+  return api.delete<void>(`/api/v1/projects/${projectId}`);
+}
+
 // ---------------------------------------------------------------------------
 // Stats
 // ---------------------------------------------------------------------------

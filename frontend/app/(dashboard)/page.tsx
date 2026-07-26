@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { Plus, FileText, Users, Sparkles, CheckCircle2, MoreHorizontal } from "lucide-react";
+import { Plus, FileText, Users, Sparkles, CheckCircle2, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { ProjectCard } from "@/features/home/components/project-card";
@@ -12,7 +12,7 @@ import { LoadingWrapper } from "@/components/shared/loading-wrapper";
 import { HomePageSkeleton } from "@/features/home/components/home-page-skeleton";
 import { NetworkErrorCard } from "@/components/shared/network-error-card";
 import { useProjects } from "@/lib/hooks";
-import { transitionProjectState, getHiringStats } from "@/lib/services/projects";
+import { transitionProjectState, deleteProject, getHiringStats } from "@/lib/services/projects";
 
 export default function HomePage() {
   const { data, isLoading, error, refetch } = useProjects();
@@ -56,6 +56,16 @@ export default function HomePage() {
       refetch();
     } catch (err) {
       console.error("Failed to reopen:", err);
+    }
+  }
+
+  async function handleDelete(projectId: string, title: string) {
+    if (!confirm(`Delete "${title}"? This can't be undone.`)) return;
+    try {
+      await deleteProject(projectId);
+      refetch();
+    } catch (err) {
+      console.error("Failed to delete:", err);
     }
   }
 
@@ -176,27 +186,36 @@ export default function HomePage() {
                         topMatchesCount={0}
                         updatedAt={project.updated_at}
                       />
-                      {/* Quick action: Mark as filled */}
-                      <button
-                        onClick={(e) => {
-                          e.preventDefault();
-                          e.stopPropagation();
-                          handleMarkFilled(project.id);
-                        }}
-                        disabled={closingId === project.id}
-                        className={cn(
-                          "absolute bottom-3 right-3 z-10",
-                          "flex items-center gap-1 rounded-md px-2 py-1 text-[11px] font-medium",
-                          "bg-white/90 backdrop-blur-sm border border-gray-200 shadow-sm",
-                          "text-gray-500 hover:text-emerald-700 hover:border-emerald-200 hover:bg-emerald-50",
-                          "opacity-0 group-hover/card:opacity-100 transition-opacity",
-                          "focus-visible:opacity-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-500"
-                        )}
-                        aria-label={`Mark ${project.title} as filled`}
-                      >
-                        <CheckCircle2 className="h-3 w-3" />
-                        {closingId === project.id ? "..." : "Filled"}
-                      </button>
+                      {/* Quick actions on hover */}
+                      <div className={cn(
+                        "absolute bottom-3 right-3 z-10 flex items-center gap-1.5",
+                        "opacity-0 group-hover/card:opacity-100 transition-opacity"
+                      )}>
+                        <button
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            handleDelete(project.id, project.title);
+                          }}
+                          className="flex items-center gap-1 rounded-md px-2 py-1 text-[11px] font-medium bg-white/90 backdrop-blur-sm border border-gray-200 shadow-sm text-gray-400 hover:text-red-600 hover:border-red-200 hover:bg-red-50"
+                          aria-label={`Delete ${project.title}`}
+                        >
+                          <Trash2 className="h-3 w-3" />
+                        </button>
+                        <button
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            handleMarkFilled(project.id);
+                          }}
+                          disabled={closingId === project.id}
+                          className="flex items-center gap-1 rounded-md px-2 py-1 text-[11px] font-medium bg-white/90 backdrop-blur-sm border border-gray-200 shadow-sm text-gray-500 hover:text-emerald-700 hover:border-emerald-200 hover:bg-emerald-50"
+                          aria-label={`Mark ${project.title} as filled`}
+                        >
+                          <CheckCircle2 className="h-3 w-3" />
+                          {closingId === project.id ? "..." : "Filled"}
+                        </button>
+                      </div>
                     </div>
                   ))}
                 </div>

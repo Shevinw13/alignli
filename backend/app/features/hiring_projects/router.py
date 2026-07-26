@@ -132,6 +132,21 @@ async def transition_project_state(
     return ProjectResponse.model_validate(project)
 
 
+@router.delete("/{project_id}", status_code=204)
+async def delete_project(
+    project_id: UUID,
+    user: AuthenticatedUser = Depends(get_current_user),
+    service: HiringProjectService = Depends(_get_service),
+) -> None:
+    """Soft-delete a hiring project."""
+    from app.core.database.session import get_current_org_id, set_current_org_id
+
+    if not get_current_org_id() and user.org_id:
+        set_current_org_id(user.org_id)
+
+    await service.delete_project(project_id)
+
+
 @router.get("/stats/overview")
 async def get_hiring_stats(
     user: AuthenticatedUser = Depends(get_current_user),

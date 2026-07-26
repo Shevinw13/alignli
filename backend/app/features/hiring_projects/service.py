@@ -67,21 +67,14 @@ class HiringProjectService:
         )
 
     async def get_project(self, project_id: UUID) -> HiringProject:
-        """Get a single project by ID.
-
-        The repository automatically applies org-scoping, so cross-org
-        access returns None (which we convert to a 404).
-
-        Args:
-            project_id: UUID of the project to retrieve.
-
-        Returns:
-            The HiringProject instance.
-
-        Raises:
-            NotFoundException: If project not found or belongs to different org.
-        """
+        """Get a single project by ID."""
         project = await self.repository.get(project_id)
         if project is None:
             raise NotFoundException(message="The requested project was not found")
         return project
+
+    async def delete_project(self, project_id: UUID) -> None:
+        """Soft-delete a project by ID."""
+        result = await self.repository.soft_delete(project_id)
+        if result is None:
+            raise NotFoundException(message="The requested project was not found")
