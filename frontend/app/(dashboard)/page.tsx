@@ -41,6 +41,15 @@ export default function HomePage() {
     }
   }
 
+  async function handleReopen(projectId: string) {
+    try {
+      await transitionProjectState(projectId, "Active");
+      refetch();
+    } catch (err) {
+      console.error("Failed to reopen:", err);
+    }
+  }
+
   if (error) {
     return (
       <NetworkErrorCard
@@ -179,6 +188,7 @@ export default function HomePage() {
                       id={project.id}
                       title={project.title}
                       filledDate={project.updated_at}
+                      onReopen={handleReopen}
                     />
                   ))}
                 </div>

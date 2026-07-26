@@ -57,7 +57,7 @@ VALID_TRANSITIONS: dict[str, set[str]] = {
     ProjectState.REVIEWING: {ProjectState.INTERVIEWING, ProjectState.FILLED, ProjectState.ARCHIVED},
     ProjectState.INTERVIEWING: {ProjectState.OFFER_EXTENDED, ProjectState.FILLED, ProjectState.ARCHIVED},
     ProjectState.OFFER_EXTENDED: {ProjectState.FILLED, ProjectState.ARCHIVED},
-    ProjectState.FILLED: {ProjectState.ARCHIVED},
+    ProjectState.FILLED: {ProjectState.ACTIVE, ProjectState.ARCHIVED},
     ProjectState.ARCHIVED: set(),  # Terminal state — no transitions out
 }
 
