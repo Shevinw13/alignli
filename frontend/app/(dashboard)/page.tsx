@@ -29,6 +29,10 @@ export default function HomePage() {
   const hasProjects = openProjects.length > 0 || closedProjects.length > 0;
   const showGettingStarted = openProjects.length > 0 && openProjects.length <= 3;
 
+  // Compute metrics (placeholder — will be powered by real API data)
+  const totalCandidates = 0; // TODO: fetch from API
+  const avgScore = 0; // TODO: compute from candidate scores
+
   async function handleMarkFilled(projectId: string) {
     setClosingId(projectId);
     try {
@@ -92,6 +96,25 @@ export default function HomePage() {
                   <Plus className="h-4 w-4" aria-hidden="true" />
                   New Job
                 </Button>
+              </div>
+
+              {/* Metrics row */}
+              <div className="relative mt-5 grid grid-cols-3 gap-3">
+                <MetricTile
+                  label="Screened"
+                  value={totalCandidates}
+                  tooltip="Total candidates analyzed by AI across all your jobs"
+                />
+                <MetricTile
+                  label="Avg Score"
+                  value={avgScore > 0 ? `${avgScore}%` : "—"}
+                  tooltip="Average AI match score across all scored candidates (0-100%)"
+                />
+                <MetricTile
+                  label="Filled"
+                  value={closedProjects.length}
+                  tooltip="Number of jobs you've successfully filled"
+                />
               </div>
             </div>
 
@@ -225,6 +248,23 @@ function GettingStartedStep({
         <p className="mt-0.5 text-[11px] leading-relaxed text-gray-500">
           {description}
         </p>
+      </div>
+    </div>
+  );
+}
+
+// ─── Metric Tile ─────────────────────────────────────────────────────────────
+
+function MetricTile({ label, value, tooltip }: { label: string; value: string | number; tooltip: string }) {
+  return (
+    <div className="group/metric relative rounded-lg bg-white/10 backdrop-blur-sm px-4 py-3">
+      <p className="text-[11px] font-medium text-violet-200">{label}</p>
+      <p className="mt-0.5 text-lg font-bold text-white">{value}</p>
+
+      {/* Tooltip on hover */}
+      <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-1.5 rounded-md bg-gray-900 text-[11px] text-white whitespace-nowrap opacity-0 group-hover/metric:opacity-100 transition-opacity pointer-events-none shadow-lg z-20">
+        {tooltip}
+        <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-gray-900" />
       </div>
     </div>
   );
