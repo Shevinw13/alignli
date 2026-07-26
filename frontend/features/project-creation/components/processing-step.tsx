@@ -20,8 +20,14 @@ export function ProcessingStep({ projectId }: ProcessingStepProps) {
   const hasStarted = useRef(false);
 
   useEffect(() => {
-    if (!projectId || hasStarted.current) return;
+    if (hasStarted.current) return;
     hasStarted.current = true;
+
+    // If no project was created, just redirect home
+    if (!projectId) {
+      window.location.href = "/";
+      return;
+    }
 
     async function runAnalysis() {
       try {
