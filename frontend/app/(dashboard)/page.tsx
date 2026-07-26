@@ -85,28 +85,26 @@ export default function HomePage() {
             {/* Getting Started tips — shown when user is new (≤3 projects) */}
             {showGettingStarted && (
               <section className="rounded-xl border border-violet-100 bg-gradient-to-br from-violet-50/50 to-white p-5 md:p-6">
-                <h3 className="text-sm font-semibold text-navy">How Narrowli works</h3>
-                <p className="mt-1 text-xs text-muted-foreground">Three simple steps to find your best candidates</p>
-
+                <h3 className="text-sm font-semibold text-gray-900">How Narrowli works</h3>
                 <div className="mt-4 grid gap-3 sm:grid-cols-3">
                   <GettingStartedStep
                     number={1}
-                    title="Define"
-                    description="Set your role, requirements, and what matters most"
+                    title="Paste your job description"
+                    description=""
                     icon={FileText}
                     done={false}
                   />
                   <GettingStartedStep
                     number={2}
-                    title="Upload"
-                    description="Add resumes, paste text, or import LinkedIn profiles"
+                    title="Upload candidate resumes"
+                    description=""
                     icon={Users}
                     done={false}
                   />
                   <GettingStartedStep
                     number={3}
-                    title="Decide"
-                    description="AI ranks candidates and shows you exactly why"
+                    title="Interview with confidence"
+                    description=""
                     icon={Sparkles}
                     done={false}
                   />
