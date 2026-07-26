@@ -160,3 +160,32 @@ export function addCandidatesFromText(
     { candidates }
   );
 }
+
+
+/**
+ * Upload resume files (PDF, DOCX, TXT) for a project.
+ * Backend extracts text and creates candidate records.
+ */
+export async function uploadCandidateFiles(
+  projectId: string,
+  files: File[]
+): Promise<ApiResponse<{ created: number; errors: Array<{ filename: string; error: string }> }>> {
+  const formData = new FormData();
+  files.forEach((file) => formData.append("files", file));
+
+  const response = await fetch(`${getApiBaseUrl()}/api/v1/projects/${projectId}/candidates/upload`, {
+    method: "POST",
+    body: formData,
+  });
+
+  if (!response.ok) {
+    throw new Error(`Upload failed: ${response.statusText}`);
+  }
+
+  const data = await response.json();
+  return { data, status: response.status };
+}
+
+function getApiBaseUrl(): string {
+  return process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
+}

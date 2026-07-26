@@ -6,7 +6,7 @@ import { ResumeUploadStep } from "@/features/project-creation/components/resume-
 import { ProcessingStep } from "@/features/project-creation/components/processing-step";
 import { WizardProvider, useWizardContext } from "@/features/project-creation/wizard-context";
 import { createProject, type CreateProjectRequest } from "@/lib/services/projects";
-import { addCandidatesFromText } from "@/lib/services/candidates";
+import { addCandidatesFromText, uploadCandidateFiles } from "@/lib/services/candidates";
 import { cn } from "@/lib/utils";
 import { ChevronDown, ChevronRight, Upload, FileText } from "lucide-react";
 
@@ -97,6 +97,11 @@ function NewProjectWizard() {
       const response = await createProject(payload);
       const newProjectId = response.data.id;
       setProjectId(newProjectId);
+
+      // Upload files (PDF/DOCX/TXT)
+      if (data.files.length > 0 && newProjectId) {
+        await uploadCandidateFiles(newProjectId, data.files);
+      }
 
       // Save pasted/linkedin candidates to backend
       const allTexts = [

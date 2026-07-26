@@ -207,3 +207,87 @@ def _parse_name_from_text(text: str) -> Optional[str]:
             return trimmed
         break
     return "Unknown"
+
+
+from fastapi import UploadFile, File as FastAPIFile
+
+
+@candidates_list_router.post("/upload")
+async def upload_candidate_files(
+    project_id: UUID,
+    files: list[UploadFile] = FastAPIFile(...),
+    user: AuthenticatedUser = Depends(get_current_user),
+    session: AsyncSession = Depends(get_db),
+):
+    """Upload PDF/DOCX/TXT resume files. Extracts text and creates candidate records."""
+    from app.core.database.session import get_current_org_id, set_current_org_id
+
+    if not get_current_org_id() and user.org_id:
+        set_current_org_id(user.org_id)
+
+    org_id = get_current_org_id()
+    created = 0
+    errors = []
+
+    for file in files:
+        try:
+            content = await file.read()
+            text = _extract_text_from_file(content, file.filename or "unknown.pdf")
+
+            if not text or len(text.strip()) < 20:
+                errors.append({"filename": file.filename, "error": "Could not extract text from file"})
+                continue
+
+            full_name = _parse_name_from_text(text)
+
+            candidate = Candidate(
+                hiring_project_id=project_id,
+                organization_id=UUID(org_id) if org_id else project_id,
+                full_name=full_name,
+                processing_status="pending",
+                status="active",
+                parsed_data={"raw_text": text, "source": "file", "filename": file.filename},
+            )
+            session.add(candidate)
+            created += 1
+        except Exception as e:
+            errors.append({"filename": file.filename, "error": str(e)})
+
+    await session.commit()
+    return {"created": created, "errors": errors}
+
+
+def _extract_text_from_file(content: bytes, filename: str) -> Optional[str]:
+    """Extract text from PDF, DOCX, or TXT file bytes."""
+    import io
+
+    lower = filename.lower()
+
+    if lower.endswith(".pdf"):
+        try:
+            from PyPDF2 import PdfReader
+            reader = PdfReader(io.BytesIO(content))
+            text_parts = []
+            for page in reader.pages:
+                page_text = page.extract_text()
+                if page_text:
+                    text_parts.append(page_text)
+            return "\n".join(text_parts)
+        except Exception:
+            return None
+
+    elif lower.endswith(".docx"):
+        try:
+            from docx import Document
+            doc = Document(io.BytesIO(content))
+            return "\n".join(para.text for para in doc.paragraphs if para.text.strip())
+        except Exception:
+            return None
+
+    elif lower.endswith(".txt"):
+        try:
+            return content.decode("utf-8")
+        except Exception:
+            return content.decode("latin-1", errors="ignore")
+
+    return None
