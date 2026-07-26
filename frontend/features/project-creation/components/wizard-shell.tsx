@@ -9,11 +9,9 @@ import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { useWizardContext } from "../wizard-context";
 
 const STEPS = [
-  { number: 1, label: "Basic Info" },
-  { number: 2, label: "Job Description" },
-  { number: 3, label: "Ranking Criteria" },
-  { number: 4, label: "Upload Resumes" },
-  { number: 5, label: "Processing" },
+  { number: 1, label: "Role" },
+  { number: 2, label: "Candidates" },
+  { number: 3, label: "Results" },
 ] as const;
 
 interface WizardShellProps {

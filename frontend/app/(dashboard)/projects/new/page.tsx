@@ -2,22 +2,12 @@
 
 import { useState } from "react";
 import { WizardShell } from "@/features/project-creation/components/wizard-shell";
-import {
-  BasicInfoStep,
-  type BasicInfoData,
-} from "@/features/project-creation/components/basic-info-step";
-import {
-  JobDescriptionStep,
-  type JobDescriptionData,
-} from "@/features/project-creation/components/job-description-step";
-import {
-  RankingCriteriaStep,
-  type RankingCriterion,
-} from "@/features/project-creation/components/ranking-criteria-step";
 import { ResumeUploadStep } from "@/features/project-creation/components/resume-upload-step";
 import { ProcessingStep } from "@/features/project-creation/components/processing-step";
 import { WizardProvider, useWizardContext } from "@/features/project-creation/wizard-context";
 import { createProject, type CreateProjectRequest } from "@/lib/services/projects";
+import { cn } from "@/lib/utils";
+import { ChevronDown, ChevronRight } from "lucide-react";
 
 export default function NewProjectPage() {
   return (
@@ -28,168 +18,178 @@ export default function NewProjectPage() {
 }
 
 function NewProjectWizard() {
-  const { currentStep, wizardData, nextStep, prevStep, setStepData } = useWizardContext();
+  const { currentStep, nextStep, prevStep, setStepData } = useWizardContext();
   const [projectId, setProjectId] = useState<string | null>(null);
-  const [generatedCriteria, setGeneratedCriteria] = useState<RankingCriterion[]>([]);
 
-  async function handleBasicInfoSubmit(data: BasicInfoData) {
-    setStepData("basicInfo", data);
-    nextStep();
-  }
+  // Step 1 state
+  const [title, setTitle] = useState("");
+  const [jobDescription, setJobDescription] = useState("");
+  const [showDetails, setShowDetails] = useState(false);
+  const [location, setLocation] = useState("");
+  const [employmentType, setEmploymentType] = useState("");
+  const [titleError, setTitleError] = useState("");
 
-  function handleJobDescriptionSubmit(data: JobDescriptionData) {
-    setStepData("jobDescription", data);
-
-    // Pull step 1 data to include in criteria
-    const basicInfo = wizardData.basicInfo;
-    const minYears = basicInfo?.minYearsExperience ? parseInt(basicInfo.minYearsExperience, 10) : null;
-
-    // Criteria from Basic Info (step 1)
-    const step1Criteria: RankingCriterion[] = [];
-
-    if (minYears && minYears > 0) {
-      step1Criteria.push({
-        id: "basic-exp",
-        category: "Experience",
-        label: `Minimum ${minYears} years of relevant experience`,
-        priority: "High",
-        maxScore: 100,
-      });
-    }
-
-    // Generic criteria (keep it to 2 — leave room for custom)
-    const genericCriteria: RankingCriterion[] = [
-      { id: "gen-2", category: "Education", label: "Educational background", priority: "Low", maxScore: 100 },
-      { id: "gen-3", category: "Leadership", label: "Communication & collaboration skills", priority: "Medium", maxScore: 100 },
-    ];
-
-    // Role-specific criteria derived from JD extraction
-    const extractedCategories = data.extractedCategories;
-    const roleCriteria: RankingCriterion[] = [];
-
-    if (extractedCategories.required_skills.length > 0) {
-      extractedCategories.required_skills.forEach((skill, i) => {
-        roleCriteria.push({
-          id: `jd-skill-${i}`,
-          category: "Skill Match",
-          label: skill.value,
-          priority: "High",
-          maxScore: 100,
-        });
-      });
-    }
-
-    if (extractedCategories.preferred_skills.length > 0) {
-      extractedCategories.preferred_skills.forEach((skill, i) => {
-        roleCriteria.push({
-          id: `jd-pref-${i}`,
-          category: "Skill Match",
-          label: skill.value,
-          priority: "Medium",
-          maxScore: 80,
-        });
-      });
-    }
-
-    if (extractedCategories.certifications.length > 0) {
-      extractedCategories.certifications.forEach((cert, i) => {
-        roleCriteria.push({
-          id: `jd-cert-${i}`,
-          category: "Certifications",
-          label: cert.value,
-          priority: "Low",
-          maxScore: 60,
-        });
-      });
-    }
-
-    // Combine: step 1 criteria + role-specific from JD + generic (max 12 total)
-    const combined = [...step1Criteria, ...roleCriteria, ...genericCriteria].slice(0, 12);
-
-    setGeneratedCriteria(combined);
-    setStepData("rankingCriteria", combined);
-  }
-
-  function handleCriteriaConfirm(criteria: RankingCriterion[]) {
-    setStepData("rankingCriteria", criteria);
-    nextStep();
-  }
-
-  async function handleResumesContinue(files: File[]) {
-    setStepData("resumeUpload", files);
-
-    // Create the project in the backend before moving to processing
-    const basicInfo = wizardData.basicInfo;
-    if (!basicInfo) {
-      nextStep();
+  // Step 1 submit
+  function handleRoleSubmit() {
+    if (!title.trim()) {
+      setTitleError("Give your role a title");
       return;
     }
+    setTitleError("");
+    setStepData("basicInfo", {
+      title: title.trim(),
+      location,
+      employmentType: (employmentType || "Full-time") as "Full-time" | "Part-time" | "Contract" | "Temporary" | "",
+      remotePreference: "",
+      assignedManager: "",
+      minYearsExperience: "",
+      salaryMin: "",
+      salaryMax: "",
+      salaryCurrency: "USD",
+      isAgency: false,
+      clientCompany: "",
+      commissionType: "",
+      commissionValue: "",
+    });
+    setStepData("jobDescription", { rawText: jobDescription });
+    nextStep();
+  }
+
+  // Step 2 submit — upload candidates then create project
+  async function handleCandidatesContinue(files: File[]) {
+    setStepData("resumeUpload", files);
 
     try {
       const payload: CreateProjectRequest = {
-        title: basicInfo.title,
-        location: basicInfo.location,
-        employment_type: basicInfo.employmentType as CreateProjectRequest["employment_type"],
-        remote_preference: (basicInfo.remotePreference || "Remote") as "Remote" | "Hybrid" | "On-site",
+        title: title.trim(),
+        location: location || "Remote",
+        employment_type: (employmentType || "Full-time") as CreateProjectRequest["employment_type"],
       };
-
       const response = await createProject(payload);
       setProjectId(response.data.id);
     } catch (err: unknown) {
-      // If backend fails, still proceed — processing will simulate
       console.error("Failed to create project:", err);
     }
 
     nextStep();
   }
 
-  // Handle the shell's Next button per step
+  // Shell next handler
   function handleShellNext() {
     if (currentStep === 1) {
-      // Trigger form submit programmatically
-      const form = document.querySelector("form");
-      if (form) {
-        form.requestSubmit();
-      } else {
-        nextStep();
-      }
+      handleRoleSubmit();
     } else {
-      // For all other steps, just advance
       nextStep();
     }
   }
 
   return (
     <WizardShell currentStep={currentStep} onNext={handleShellNext}>
+      {/* ─── Step 1: About the Role ─── */}
       {currentStep === 1 && (
-        <BasicInfoStep
-          initialData={wizardData.basicInfo ?? undefined}
-          onSubmit={handleBasicInfoSubmit}
-        />
+        <div className="space-y-6">
+          <div>
+            <h2 className="text-lg font-semibold text-gray-900">About the role</h2>
+            <p className="mt-1 text-sm text-gray-500">
+              Tell us what you're hiring for. Paste a job description if you have one.
+            </p>
+          </div>
+
+          {/* Title */}
+          <div className="space-y-1.5">
+            <label htmlFor="role-title" className="block text-sm font-medium text-gray-900">
+              Role title <span className="text-red-500">*</span>
+            </label>
+            <input
+              id="role-title"
+              type="text"
+              value={title}
+              onChange={(e) => { setTitle(e.target.value); if (titleError) setTitleError(""); }}
+              placeholder="e.g., Senior Software Engineer"
+              className={cn(
+                "w-full rounded-xl border px-4 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 outline-none transition-colors",
+                "focus:border-violet-500 focus:ring-2 focus:ring-violet-500/20",
+                titleError ? "border-red-400" : "border-gray-200"
+              )}
+              autoFocus
+            />
+            {titleError && <p className="text-xs text-red-500">{titleError}</p>}
+          </div>
+
+          {/* Job Description */}
+          <div className="space-y-1.5">
+            <label htmlFor="job-description" className="block text-sm font-medium text-gray-900">
+              Job description
+            </label>
+            <textarea
+              id="job-description"
+              value={jobDescription}
+              onChange={(e) => setJobDescription(e.target.value)}
+              placeholder="Paste your job description here (optional but helps AI rank more accurately)..."
+              rows={6}
+              className={cn(
+                "w-full resize-y rounded-xl border px-4 py-3 text-sm text-gray-900 placeholder:text-gray-400 outline-none transition-colors",
+                "focus:border-violet-500 focus:ring-2 focus:ring-violet-500/20",
+                "border-gray-200"
+              )}
+            />
+            <p className="text-xs text-gray-400">
+              The AI uses this to determine what matters most for scoring candidates.
+            </p>
+          </div>
+
+          {/* Optional details (collapsed) */}
+          <div>
+            <button
+              type="button"
+              onClick={() => setShowDetails(!showDetails)}
+              className="flex items-center gap-1.5 text-sm font-medium text-violet-600 hover:text-violet-700"
+            >
+              {showDetails ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+              {showDetails ? "Hide details" : "Add more details (optional)"}
+            </button>
+
+            {showDetails && (
+              <div className="mt-4 grid gap-4 sm:grid-cols-2">
+                <div className="space-y-1.5">
+                  <label htmlFor="location" className="block text-xs font-medium text-gray-600">Location</label>
+                  <input
+                    id="location"
+                    type="text"
+                    value={location}
+                    onChange={(e) => setLocation(e.target.value)}
+                    placeholder="e.g., San Francisco, CA"
+                    className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 outline-none focus:border-violet-500 focus:ring-2 focus:ring-violet-500/20"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <label htmlFor="emp-type" className="block text-xs font-medium text-gray-600">Employment type</label>
+                  <select
+                    id="emp-type"
+                    value={employmentType}
+                    onChange={(e) => setEmploymentType(e.target.value)}
+                    className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm text-gray-900 outline-none appearance-none bg-white focus:border-violet-500 focus:ring-2 focus:ring-violet-500/20"
+                  >
+                    <option value="">Full-time (default)</option>
+                    <option value="Full-time">Full-time</option>
+                    <option value="Part-time">Part-time</option>
+                    <option value="Contract">Contract</option>
+                    <option value="Temporary">Temporary</option>
+                  </select>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
       )}
 
+      {/* ─── Step 2: Add Candidates ─── */}
       {currentStep === 2 && (
-        <JobDescriptionStep
-          initialData={(wizardData.jobDescription as JobDescriptionData) ?? undefined}
-          onSubmit={handleJobDescriptionSubmit}
-          onBack={prevStep}
-        />
+        <ResumeUploadStep onContinue={handleCandidatesContinue} />
       )}
 
+      {/* ─── Step 3: Processing ─── */}
       {currentStep === 3 && (
-        <RankingCriteriaStep
-          initialCriteria={generatedCriteria}
-          onConfirm={handleCriteriaConfirm}
-        />
-      )}
-
-      {currentStep === 4 && (
-        <ResumeUploadStep
-          onContinue={handleResumesContinue}
-        />
-      )}
-
-      {currentStep === 5 && (
         <ProcessingStep
           projectId={projectId ?? ""}
           totalResumes={5}

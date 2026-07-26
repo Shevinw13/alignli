@@ -10,8 +10,8 @@ export interface WizardData {
   resumeUpload: unknown | null;
 }
 
-const TOTAL_STEPS = 5;
-const DRAFT_STORAGE_KEY = "alignli_wizard_draft";
+const TOTAL_STEPS = 3;
+const DRAFT_STORAGE_KEY = "narrowli_wizard_draft";
 
 const INITIAL_WIZARD_DATA: WizardData = {
   basicInfo: null,
