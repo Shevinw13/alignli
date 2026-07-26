@@ -52,10 +52,10 @@ class ProjectState:
 
 # Valid transitions: source_state -> set of allowed target states
 VALID_TRANSITIONS: dict[str, set[str]] = {
-    ProjectState.DRAFT: {ProjectState.ACTIVE, ProjectState.ARCHIVED},
-    ProjectState.ACTIVE: {ProjectState.REVIEWING, ProjectState.ARCHIVED},
-    ProjectState.REVIEWING: {ProjectState.INTERVIEWING, ProjectState.ARCHIVED},
-    ProjectState.INTERVIEWING: {ProjectState.OFFER_EXTENDED, ProjectState.ARCHIVED},
+    ProjectState.DRAFT: {ProjectState.ACTIVE, ProjectState.FILLED, ProjectState.ARCHIVED},
+    ProjectState.ACTIVE: {ProjectState.REVIEWING, ProjectState.FILLED, ProjectState.ARCHIVED},
+    ProjectState.REVIEWING: {ProjectState.INTERVIEWING, ProjectState.FILLED, ProjectState.ARCHIVED},
+    ProjectState.INTERVIEWING: {ProjectState.OFFER_EXTENDED, ProjectState.FILLED, ProjectState.ARCHIVED},
     ProjectState.OFFER_EXTENDED: {ProjectState.FILLED, ProjectState.ARCHIVED},
     ProjectState.FILLED: {ProjectState.ARCHIVED},
     ProjectState.ARCHIVED: set(),  # Terminal state — no transitions out

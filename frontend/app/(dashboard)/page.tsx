@@ -148,7 +148,7 @@ export default function HomePage() {
                         }}
                         disabled={closingId === project.id}
                         className={cn(
-                          "absolute top-3 right-3 z-10",
+                          "absolute bottom-3 right-3 z-10",
                           "flex items-center gap-1 rounded-md px-2 py-1 text-[11px] font-medium",
                           "bg-white/90 backdrop-blur-sm border border-gray-200 shadow-sm",
                           "text-gray-500 hover:text-emerald-700 hover:border-emerald-200 hover:bg-emerald-50",
