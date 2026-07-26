@@ -21,6 +21,12 @@ export interface RankedCandidate {
   interviewQuestions: string[];
   experience: string;
   currentRole?: string;
+  location?: string;
+  email?: string;
+  phone?: string;
+  company?: string;
+  education?: string;
+  resumeText?: string;
 }
 
 export interface RedFlag {
@@ -47,7 +53,10 @@ const DEMO_CANDIDATES: RankedCandidate[] = [
       "What made you interested in moving back to an IC-focused role?",
     ],
     experience: "8 years",
-    currentRole: "Staff Engineer, Stripe",
+    currentRole: "Staff Engineer",
+    company: "Stripe",
+    location: "San Francisco, CA",
+    education: "Stanford University, BS Computer Science",
   },
   {
     id: "2",
@@ -179,6 +188,12 @@ export function RankedResults({ projectTitle, projectId, candidates: propCandida
               interviewQuestions: (profile.interview_questions as string[]) || candidate.interviewQuestions,
               experience: profile.years_experience ? `${profile.years_experience} years` : candidate.experience,
               currentRole: profile.current_company || candidate.currentRole,
+              location: profile.location || candidate.location,
+              email: profile.email || candidate.email,
+              phone: profile.phone || candidate.phone,
+              company: profile.current_company || candidate.company,
+              education: (profile.parsed_data?.education as string) || candidate.education,
+              resumeText: (profile.parsed_data?.raw_text as string) || (profile.parsed_data?.text as string) || candidate.resumeText,
             };
           })
         );
@@ -326,81 +341,124 @@ function CandidateRow({
 
       {/* Expanded detail */}
       {isExpanded && (
-        <div className="border-t border-gray-100 px-5 py-5 space-y-5">
-          {/* Meta */}
-          <div className="flex items-center gap-4 text-xs text-gray-500">
-            {candidate.currentRole && <span>{candidate.currentRole}</span>}
-            <span>{candidate.experience} experience</span>
-          </div>
+        <ExpandedDetail candidate={candidate} isComparing={isComparing} onToggleCompare={onToggleCompare} />
+      )}
+    </div>
+  );
+}
 
-          {/* Strengths */}
-          <div>
-            <h4 className="text-xs font-semibold text-gray-700 uppercase tracking-wide mb-2">Strengths</h4>
-            <ul className="space-y-1">
-              {candidate.strengths.map((s, i) => (
-                <li key={i} className="flex items-start gap-2 text-sm text-gray-600">
-                  <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-emerald-400" />
-                  {s}
-                </li>
-              ))}
-            </ul>
-          </div>
+// ─── Expanded Detail ─────────────────────────────────────────────────────────
 
-          {/* Concerns */}
-          {candidate.concerns.length > 0 && (
-            <div>
-              <h4 className="text-xs font-semibold text-gray-700 uppercase tracking-wide mb-2">Concerns</h4>
-              <ul className="space-y-1">
-                {candidate.concerns.map((c, i) => (
-                  <li key={i} className="flex items-start gap-2 text-sm text-gray-600">
-                    <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-amber-400" />
-                    {c}
-                  </li>
-                ))}
-              </ul>
-            </div>
+function ExpandedDetail({
+  candidate,
+  isComparing,
+  onToggleCompare,
+}: {
+  candidate: RankedCandidate;
+  isComparing: boolean;
+  onToggleCompare: () => void;
+}) {
+  const [showResume, setShowResume] = useState(false);
+
+  return (
+    <div className="border-t border-gray-100 px-5 py-5 space-y-5">
+      {/* Profile info row */}
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-gray-500">
+        {candidate.company && <span className="font-medium text-gray-700">{candidate.company}</span>}
+        {candidate.currentRole && <span>{candidate.currentRole}</span>}
+        {candidate.experience && <span>{candidate.experience} experience</span>}
+        {candidate.location && <span>📍 {candidate.location}</span>}
+        {candidate.education && <span>🎓 {candidate.education}</span>}
+        {candidate.email && <span>✉ {candidate.email}</span>}
+        {candidate.phone && <span>📞 {candidate.phone}</span>}
+      </div>
+
+      {/* Strengths */}
+      <div>
+        <h4 className="text-xs font-semibold text-gray-700 uppercase tracking-wide mb-2">Strengths</h4>
+        <ul className="space-y-1">
+          {candidate.strengths.map((s, i) => (
+            <li key={i} className="flex items-start gap-2 text-sm text-gray-600">
+              <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-emerald-400" />
+              {s}
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      {/* Concerns */}
+      {candidate.concerns.length > 0 && (
+        <div>
+          <h4 className="text-xs font-semibold text-gray-700 uppercase tracking-wide mb-2">Concerns</h4>
+          <ul className="space-y-1">
+            {candidate.concerns.map((c, i) => (
+              <li key={i} className="flex items-start gap-2 text-sm text-gray-600">
+                <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-amber-400" />
+                {c}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {/* Red Flags */}
+      {candidate.redFlags.length > 0 && (
+        <div className="rounded-lg bg-amber-50 border border-amber-100 p-3">
+          <h4 className="text-xs font-semibold text-amber-800 flex items-center gap-1.5 mb-2">
+            <AlertTriangle className="h-3.5 w-3.5" />
+            Flags to discuss in interview
+          </h4>
+          <ul className="space-y-1">
+            {candidate.redFlags.map((flag, i) => (
+              <li key={i} className="text-xs text-amber-700">{flag.description}</li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {/* Interview Questions */}
+      <div>
+        <h4 className="text-xs font-semibold text-gray-700 uppercase tracking-wide mb-2 flex items-center gap-1.5">
+          <MessageSquare className="h-3.5 w-3.5" />
+          Suggested interview questions
+        </h4>
+        <ol className="space-y-2 list-decimal list-inside">
+          {candidate.interviewQuestions.map((q, i) => (
+            <li key={i} className="text-sm text-gray-600 leading-relaxed">{q}</li>
+          ))}
+        </ol>
+      </div>
+
+      {/* Actions row */}
+      <div className="flex items-center gap-2 pt-1">
+        <button
+          onClick={(e) => { e.stopPropagation(); onToggleCompare(); }}
+          className={cn(
+            "text-xs font-medium px-3 py-1.5 rounded-md border transition-colors",
+            isComparing
+              ? "bg-violet-50 border-violet-200 text-violet-700"
+              : "border-gray-200 text-gray-600 hover:bg-gray-50"
           )}
+        >
+          {isComparing ? "✓ Added to compare" : "Add to compare"}
+        </button>
 
-          {/* Red Flags */}
-          {candidate.redFlags.length > 0 && (
-            <div className="rounded-lg bg-amber-50 border border-amber-100 p-3">
-              <h4 className="text-xs font-semibold text-amber-800 flex items-center gap-1.5 mb-2">
-                <AlertTriangle className="h-3.5 w-3.5" />
-                Flags to discuss in interview
-              </h4>
-              <ul className="space-y-1">
-                {candidate.redFlags.map((flag, i) => (
-                  <li key={i} className="text-xs text-amber-700">{flag.description}</li>
-                ))}
-              </ul>
-            </div>
-          )}
-
-          {/* Interview Questions */}
-          <div>
-            <h4 className="text-xs font-semibold text-gray-700 uppercase tracking-wide mb-2 flex items-center gap-1.5">
-              <MessageSquare className="h-3.5 w-3.5" />
-              Suggested interview questions
-            </h4>
-            <ol className="space-y-2 list-decimal list-inside">
-              {candidate.interviewQuestions.map((q, i) => (
-                <li key={i} className="text-sm text-gray-600 leading-relaxed">{q}</li>
-              ))}
-            </ol>
-          </div>
-
-          {/* Compare toggle */}
+        {candidate.resumeText && (
           <button
-            onClick={(e) => { e.stopPropagation(); onToggleCompare(); }}
-            className={cn(
-              "text-xs font-medium px-3 py-1.5 rounded-md border transition-colors",
-              isComparing
-                ? "bg-violet-50 border-violet-200 text-violet-700"
-                : "border-gray-200 text-gray-600 hover:bg-gray-50"
-            )}
+            onClick={(e) => { e.stopPropagation(); setShowResume(!showResume); }}
+            className="text-xs font-medium px-3 py-1.5 rounded-md border border-gray-200 text-gray-600 hover:bg-gray-50 transition-colors"
           >
-            {isComparing ? "✓ Added to compare" : "Add to compare"}
+            {showResume ? "Hide resume" : "View resume"}
           </button>
+        )}
+      </div>
+
+      {/* Resume text viewer */}
+      {showResume && candidate.resumeText && (
+        <div className="rounded-lg border border-gray-200 bg-gray-50 p-4 max-h-64 overflow-y-auto">
+          <pre className="text-xs text-gray-600 whitespace-pre-wrap font-sans leading-relaxed">
+            {candidate.resumeText}
+          </pre>
         </div>
       )}
     </div>
