@@ -274,10 +274,10 @@ export function ResumeUploadStep({ onContinue, projectId }: ResumeUploadStepProp
         tabIndex={0}
         aria-label="Drag and drop PDF resumes here, or click to browse files"
         className={cn(
-          "flex min-h-[200px] flex-col items-center justify-center gap-3 rounded-[16px] border-2 border-dashed p-8 transition-colors cursor-pointer",
+          "flex min-h-[280px] flex-col items-center justify-center gap-4 rounded-2xl border-2 border-dashed p-10 transition-all duration-200 cursor-pointer",
           isDragOver
-            ? "border-violet-400 bg-violet-50"
-            : "border-violet-200 bg-white hover:border-violet-300 hover:bg-violet-50/50"
+            ? "border-violet-400 bg-violet-50 scale-[1.01]"
+            : "border-violet-200 bg-white hover:border-violet-300 hover:bg-violet-50/30"
         )}
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
@@ -292,20 +292,20 @@ export function ResumeUploadStep({ onContinue, projectId }: ResumeUploadStepProp
       >
         <CloudUpload
           className={cn(
-            "h-10 w-10",
-            isDragOver ? "text-violet-500" : "text-gray-400"
+            "h-12 w-12",
+            isDragOver ? "text-violet-500 scale-110 transition-transform" : "text-gray-300"
           )}
           aria-hidden="true"
         />
-        <p className="text-center text-sm text-muted-foreground">
-          Drag &amp; drop PDF resumes here
+        <p className="text-center text-base font-medium text-gray-700">
+          Drag &amp; drop resumes here
         </p>
-        <p className="text-center text-sm text-muted-foreground">
+        <p className="text-center text-sm text-gray-400">
           or{" "}
-          <span className="font-medium text-violet-600 underline">browse files</span>
+          <span className="font-medium text-violet-600 underline underline-offset-2">browse files</span>
         </p>
-        <p className="text-xs text-muted-foreground">
-          Up to {MAX_FILES_PER_BATCH} files, max {MAX_FILE_SIZE_BYTES / (1024 * 1024)} MB each
+        <p className="text-xs text-gray-400 mt-1">
+          PDF files · Up to {MAX_FILES_PER_BATCH} at a time
         </p>
       </div>
 

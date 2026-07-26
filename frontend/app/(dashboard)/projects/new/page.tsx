@@ -114,9 +114,9 @@ function NewProjectWizard() {
       {currentStep === 1 && (
         <div className="space-y-8">
           <div>
-            <h2 className="text-xl font-semibold text-gray-900">About the role</h2>
+            <h2 className="text-xl font-semibold text-gray-900">Tell us who you're hiring.</h2>
             <p className="mt-2 text-sm text-gray-500">
-              Tell us what you're hiring for. Paste a job description if you have one.
+              Paste a job description if you have one — or just give us the basics.
             </p>
           </div>
 
