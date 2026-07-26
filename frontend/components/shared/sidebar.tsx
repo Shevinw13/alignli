@@ -3,7 +3,7 @@
 import { useState, useCallback, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { FolderKanban, Settings, User, Menu, X, ChevronsLeft, ChevronsRight } from "lucide-react";
+import { FolderKanban, Settings, Menu, X, ChevronsLeft, ChevronsRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface NavItem {
@@ -15,7 +15,6 @@ interface NavItem {
 const navItems: NavItem[] = [
   { label: "Jobs", href: "/", icon: FolderKanban },
   { label: "Settings", href: "/settings", icon: Settings },
-  { label: "Account", href: "/account", icon: User },
 ];
 
 export function Sidebar() {
