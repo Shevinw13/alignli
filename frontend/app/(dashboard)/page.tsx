@@ -31,11 +31,14 @@ export default function HomePage() {
 
   // Fetch real metrics from API
   const [stats, setStats] = useState({ total_screened: 0, avg_score: 0 });
+
+  function refreshStats() {
+    getHiringStats().then((res) => setStats(res.data)).catch(() => {});
+  }
+
   useEffect(() => {
     if (!hasProjects) return;
-    getHiringStats()
-      .then((res) => setStats(res.data))
-      .catch(() => {}); // Silently fail — metrics are non-critical
+    refreshStats();
   }, [hasProjects]);
 
   async function handleMarkFilled(projectId: string) {
@@ -64,6 +67,7 @@ export default function HomePage() {
     try {
       await deleteProject(projectId);
       refetch();
+      refreshStats();
     } catch (err) {
       console.error("Failed to delete:", err);
     }

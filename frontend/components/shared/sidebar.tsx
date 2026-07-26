@@ -14,7 +14,6 @@ interface NavItem {
 }
 
 const navItems: NavItem[] = [
-  { label: "Website", href: "/landing", icon: Globe },
   { label: "Jobs", href: "/", icon: FolderKanban },
   { label: "Settings", href: "/settings", icon: Settings },
 ];
