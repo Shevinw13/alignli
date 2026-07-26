@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowRight, Users, Star, Calendar, Upload, FileText } from "lucide-react";
+import { ArrowRight, Upload } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export interface ProjectCardProps {
@@ -12,21 +12,6 @@ export interface ProjectCardProps {
   topMatchesCount: number;
   updatedAt?: string;
 }
-
-const statusConfig: Record<string, { bg: string; text: string; accent: string; dot: string }> = {
-  Draft: { bg: "bg-gray-50", text: "text-gray-600", accent: "from-gray-300 to-gray-400", dot: "bg-gray-400" },
-  "In Progress": { bg: "bg-sky-50", text: "text-sky-700", accent: "from-sky-400 to-sky-500", dot: "bg-sky-500" },
-  Active: { bg: "bg-emerald-50", text: "text-emerald-700", accent: "from-emerald-400 to-emerald-500", dot: "bg-emerald-500" },
-  Reviewing: { bg: "bg-amber-50", text: "text-amber-700", accent: "from-amber-400 to-amber-500", dot: "bg-amber-500" },
-  Interviewing: { bg: "bg-blue-50", text: "text-blue-700", accent: "from-blue-400 to-blue-500", dot: "bg-blue-500" },
-  "Offer Extended": { bg: "bg-purple-50", text: "text-purple-700", accent: "from-purple-400 to-purple-500", dot: "bg-purple-500" },
-};
-
-// Contextual next-action hints based on project state
-const nextActionHint: Record<string, { icon: typeof Upload; text: string }> = {
-  Draft: { icon: Upload, text: "Add resumes → get instant rankings" },
-  Active: { icon: FileText, text: "View your ranked candidates" },
-};
 
 function formatRelativeDate(dateStr?: string): string {
   if (!dateStr) return "";
@@ -51,73 +36,39 @@ export function ProjectCard({
   topMatchesCount,
   updatedAt,
 }: ProjectCardProps) {
-  const hasStats = candidateCount > 0 || topMatchesCount > 0;
-  const config = statusConfig[status] ?? statusConfig.Draft;
-  const hint = !hasStats ? nextActionHint[status] : null;
+  const hasCandidates = candidateCount > 0;
 
   return (
     <Link
       href={`/projects/${id}`}
       className={cn(
-        "group relative block overflow-hidden rounded-[16px] border border-border bg-white",
-        "shadow-sm hover:shadow-md transition-shadow duration-200",
-        "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-600"
+        "group block rounded-xl border border-gray-200 bg-white p-5",
+        "hover:border-violet-200 hover:shadow-sm transition-all duration-150",
+        "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-500"
       )}
     >
-      {/* Gradient top accent bar — thicker for visibility */}
-      <div className={cn("h-1.5 w-full bg-gradient-to-r", config.accent)} />
-
-      <div className="p-5">
-        {/* Header row */}
-        <div className="flex items-start justify-between gap-3">
-          <div className="min-w-0 flex-1">
-            <h3 className="truncate text-[15px] font-semibold text-navy group-hover:text-violet-600 transition-colors">
-              {title}
-            </h3>
-            <div className="mt-2.5 flex items-center gap-3">
-              <span className="flex items-center gap-1.5">
-                <span className={cn("h-2 w-2 rounded-full", config.dot)} />
-                <span className={cn("text-xs font-medium", config.text)}>
-                  {status}
-                </span>
-              </span>
-              {updatedAt && (
-                <span className="flex items-center gap-1 text-[11px] text-gray-400">
-                  <Calendar className="h-3 w-3" aria-hidden="true" />
-                  {formatRelativeDate(updatedAt)}
-                </span>
-              )}
-            </div>
-          </div>
-          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gray-50 group-hover:bg-violet-100 transition-colors">
-            <ArrowRight className="h-3.5 w-3.5 text-gray-400 group-hover:text-violet-600 transition-colors" aria-hidden="true" />
-          </div>
-        </div>
-
-        {/* Stats row (when candidates exist) */}
-        {hasStats && (
-          <div className="mt-4 flex items-center gap-4 border-t border-gray-100 pt-3 text-xs text-muted-foreground">
-            <span className="flex items-center gap-1.5">
-              <Users className="h-3.5 w-3.5" aria-hidden="true" />
-              <span>{candidateCount} candidates</span>
-            </span>
-            {topMatchesCount > 0 && (
-              <span className="flex items-center gap-1.5 text-emerald-600">
-                <Star className="h-3.5 w-3.5" aria-hidden="true" />
-                <span>{topMatchesCount} top matches</span>
-              </span>
-            )}
-          </div>
-        )}
-
-        {/* Next action hint (when no candidates yet) */}
-        {hint && (
-          <div className="mt-4 flex items-center gap-2 rounded-lg bg-[#f0fafb] px-3 py-2">
-            <hint.icon className="h-3.5 w-3.5 text-violet-600" aria-hidden="true" />
-            <span className="text-xs text-violet-700">{hint.text}</span>
-          </div>
-        )}
+      {/* Title + arrow */}
+      <div className="flex items-start justify-between gap-3">
+        <h3 className="text-[15px] font-semibold text-gray-900 group-hover:text-violet-700 transition-colors truncate">
+          {title}
+        </h3>
+        <ArrowRight className="h-4 w-4 shrink-0 text-gray-300 group-hover:text-violet-500 transition-colors mt-0.5" aria-hidden="true" />
       </div>
+
+      {/* Meta line */}
+      <p className="mt-2 text-xs text-gray-400">
+        {updatedAt && formatRelativeDate(updatedAt)}
+        {hasCandidates && ` · ${candidateCount} candidate${candidateCount !== 1 ? "s" : ""}`}
+        {topMatchesCount > 0 && ` · ${topMatchesCount} top`}
+      </p>
+
+      {/* Action hint when no candidates */}
+      {!hasCandidates && (
+        <div className="mt-3 flex items-center gap-2 text-xs text-violet-600">
+          <Upload className="h-3.5 w-3.5" aria-hidden="true" />
+          <span>Add resumes to get rankings</span>
+        </div>
+      )}
     </Link>
   );
 }
