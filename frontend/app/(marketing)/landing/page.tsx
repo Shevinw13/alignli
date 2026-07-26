@@ -31,11 +31,11 @@ export default function LandingPage() {
       <section className="pt-32 pb-20 px-6">
         <div className="mx-auto max-w-3xl text-center">
           <h1 className="text-4xl font-bold tracking-tight text-gray-900 sm:text-5xl lg:text-6xl">
-            Upload resumes.<br />
-            <span className="text-violet-600">We'll tell you who to interview.</span>
+            Find the right hire.<br />
+            <span className="text-violet-600">Faster.</span>
           </h1>
           <p className="mt-6 text-lg text-gray-500 leading-relaxed max-w-2xl mx-auto">
-            Narrowli analyzes every resume against your job description, explains every recommendation, highlights hiring considerations, and generates tailored interview questions — all in under a minute.
+            AI-powered candidate intelligence that helps you identify, evaluate, and hire the best talent with confidence.
           </p>
           <div className="mt-10 flex items-center justify-center gap-4">
             <Link
