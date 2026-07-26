@@ -53,17 +53,17 @@ export function WizardShell({ currentStep, children, onNext }: WizardShellProps)
 
   return (
     <div className="flex min-h-[calc(100vh-6rem)] flex-col">
-      <div className="flex-1 space-y-8 pb-24">
+      <div className="flex-1 space-y-8 pb-24 max-w-3xl mx-auto w-full">
         <div>
-          <h1 className="text-xl font-bold text-navy">New Job</h1>
-          <p className="mt-0.5 text-xs text-muted-foreground">
+          <h1 className="text-2xl font-bold text-gray-900">New Job</h1>
+          <p className="mt-1 text-sm text-gray-500">
             Step {currentStep} of {STEPS.length}
           </p>
         </div>
 
         {/* Step Indicator */}
         <nav aria-label="Progress">
-          <ol className="flex items-center gap-2">
+          <ol className="flex items-center">
             {STEPS.map((step, index) => {
               const isCompleted =
                 completedSteps.has(step.number) || currentStep > step.number;
@@ -71,30 +71,30 @@ export function WizardShell({ currentStep, children, onNext }: WizardShellProps)
               const isRemaining = !isCompleted && !isCurrent;
 
               return (
-                <li key={step.number} className="flex items-center gap-2">
-                  <div className="flex items-center gap-2">
+                <li key={step.number} className="flex items-center">
+                  <div className="flex items-center gap-2.5">
                     <div
                       className={cn(
-                        "flex h-7 w-7 items-center justify-center rounded-full text-xs font-semibold transition-colors",
+                        "flex h-8 w-8 items-center justify-center rounded-full text-sm font-semibold transition-colors",
                         isCompleted && "bg-violet-600 text-white",
                         isCurrent &&
-                          "border-2 border-violet-600 bg-violet-100 text-violet-600",
+                          "border-2 border-violet-600 bg-violet-50 text-violet-600",
                         isRemaining &&
                           "border-2 border-gray-200 bg-white text-gray-400"
                       )}
                       aria-current={isCurrent ? "step" : undefined}
                     >
                       {isCompleted ? (
-                        <Check className="h-3.5 w-3.5" aria-hidden="true" />
+                        <Check className="h-4 w-4" aria-hidden="true" />
                       ) : (
                         step.number
                       )}
                     </div>
                     <span
                       className={cn(
-                        "hidden text-xs font-medium sm:inline",
+                        "text-sm font-medium",
                         isCompleted && "text-violet-600",
-                        isCurrent && "text-violet-600 font-semibold",
+                        isCurrent && "text-violet-700 font-semibold",
                         isRemaining && "text-gray-400"
                       )}
                     >
@@ -106,7 +106,7 @@ export function WizardShell({ currentStep, children, onNext }: WizardShellProps)
                   {index < STEPS.length - 1 && (
                     <div
                       className={cn(
-                        "hidden h-0.5 w-4 sm:block md:w-8",
+                        "h-0.5 w-12 mx-3",
                         isCompleted ? "bg-violet-600" : "bg-gray-200"
                       )}
                       aria-hidden="true"

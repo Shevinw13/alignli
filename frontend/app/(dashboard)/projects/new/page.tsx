@@ -27,6 +27,8 @@ function NewProjectWizard() {
   const [showDetails, setShowDetails] = useState(false);
   const [location, setLocation] = useState("");
   const [employmentType, setEmploymentType] = useState("");
+  const [company, setCompany] = useState("");
+  const [hiringManager, setHiringManager] = useState("");
   const [titleError, setTitleError] = useState("");
 
   // Step 1 submit
@@ -154,6 +156,28 @@ function NewProjectWizard() {
 
             {showDetails && (
               <div className="mt-4 grid gap-4 sm:grid-cols-2">
+                <div className="space-y-1.5">
+                  <label htmlFor="company" className="block text-xs font-medium text-gray-600">Company / Organization</label>
+                  <input
+                    id="company"
+                    type="text"
+                    value={company}
+                    onChange={(e) => setCompany(e.target.value)}
+                    placeholder="e.g., Acme Corp"
+                    className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 outline-none focus:border-violet-500 focus:ring-2 focus:ring-violet-500/20"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <label htmlFor="hiring-manager" className="block text-xs font-medium text-gray-600">Hiring Manager</label>
+                  <input
+                    id="hiring-manager"
+                    type="text"
+                    value={hiringManager}
+                    onChange={(e) => setHiringManager(e.target.value)}
+                    placeholder="e.g., Jane Smith"
+                    className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 outline-none focus:border-violet-500 focus:ring-2 focus:ring-violet-500/20"
+                  />
+                </div>
                 <div className="space-y-1.5">
                   <label htmlFor="location" className="block text-xs font-medium text-gray-600">Location</label>
                   <input
