@@ -244,7 +244,7 @@ export function BasicInfoStep({ initialData, onSubmit }: BasicInfoStepProps) {
           placeholder="e.g., Senior Software Engineer"
           className={cn(
             "w-full rounded-[12px] border px-4 py-2.5 text-sm text-navy placeholder:text-muted-foreground outline-none transition-colors",
-            "focus:border-[#0099CC] focus:ring-2 focus:ring-[#0099CC]/20",
+            "focus:border-violet-600 focus:ring-2 focus:ring-violet-600/20",
             errors.title
               ? "border-red-500"
               : "border-border-default"
@@ -272,7 +272,7 @@ export function BasicInfoStep({ initialData, onSubmit }: BasicInfoStepProps) {
           placeholder="e.g., San Francisco, CA"
           className={cn(
             "w-full rounded-[12px] border px-4 py-2.5 text-sm text-navy placeholder:text-muted-foreground outline-none transition-colors",
-            "focus:border-[#0099CC] focus:ring-2 focus:ring-[#0099CC]/20",
+            "focus:border-violet-600 focus:ring-2 focus:ring-violet-600/20",
             errors.location
               ? "border-red-500"
               : "border-border-default"
@@ -297,7 +297,7 @@ export function BasicInfoStep({ initialData, onSubmit }: BasicInfoStepProps) {
           onBlur={() => validateField("employmentType")}
           className={cn(
             "w-full rounded-[12px] border px-4 py-2.5 text-sm text-navy outline-none transition-colors appearance-none bg-white",
-            "focus:border-[#0099CC] focus:ring-2 focus:ring-[#0099CC]/20",
+            "focus:border-violet-600 focus:ring-2 focus:ring-violet-600/20",
             errors.employmentType
               ? "border-red-500"
               : "border-border-default",
@@ -337,7 +337,7 @@ export function BasicInfoStep({ initialData, onSubmit }: BasicInfoStepProps) {
           placeholder="e.g., 3"
           className={cn(
             "w-full rounded-[12px] border px-4 py-2.5 text-sm text-navy placeholder:text-muted-foreground outline-none transition-colors",
-            "focus:border-[#0099CC] focus:ring-2 focus:ring-[#0099CC]/20",
+            "focus:border-violet-600 focus:ring-2 focus:ring-violet-600/20",
             errors.minYearsExperience
               ? "border-red-500"
               : "border-border-default"
@@ -357,7 +357,7 @@ export function BasicInfoStep({ initialData, onSubmit }: BasicInfoStepProps) {
         <button
           type="button"
           onClick={() => setShowAdvanced((prev) => !prev)}
-          className="flex items-center gap-1.5 text-sm font-medium text-[#0099CC] hover:text-[#007aa3] transition-colors"
+          className="flex items-center gap-1.5 text-sm font-medium text-violet-600 hover:text-violet-700 transition-colors"
           aria-expanded={showAdvanced}
           aria-controls="advanced-options"
         >
@@ -382,7 +382,7 @@ export function BasicInfoStep({ initialData, onSubmit }: BasicInfoStepProps) {
                 onChange={(e) => handleChange("remotePreference", e.target.value)}
                 className={cn(
                   "w-full rounded-[12px] border px-4 py-2.5 text-sm text-navy outline-none transition-colors appearance-none bg-white",
-                  "focus:border-[#0099CC] focus:ring-2 focus:ring-[#0099CC]/20",
+                  "focus:border-violet-600 focus:ring-2 focus:ring-violet-600/20",
                   "border-border-default",
                   !formData.remotePreference && "text-muted-foreground"
                 )}
@@ -411,7 +411,7 @@ export function BasicInfoStep({ initialData, onSubmit }: BasicInfoStepProps) {
                 placeholder="e.g., Jane Smith"
                 className={cn(
                   "w-full rounded-[12px] border px-4 py-2.5 text-sm text-navy placeholder:text-muted-foreground outline-none transition-colors",
-                  "focus:border-[#0099CC] focus:ring-2 focus:ring-[#0099CC]/20",
+                  "focus:border-violet-600 focus:ring-2 focus:ring-violet-600/20",
                   "border-border-default"
                 )}
               />
@@ -428,7 +428,7 @@ export function BasicInfoStep({ initialData, onSubmit }: BasicInfoStepProps) {
                   onChange={(e) => handleChange("salaryCurrency", e.target.value)}
                   className={cn(
                     "rounded-[12px] border px-2 py-2.5 text-sm text-navy outline-none transition-colors appearance-none bg-white",
-                    "focus:border-[#0099CC] focus:ring-2 focus:ring-[#0099CC]/20",
+                    "focus:border-violet-600 focus:ring-2 focus:ring-violet-600/20",
                     "border-border-default"
                   )}
                 >
@@ -446,7 +446,7 @@ export function BasicInfoStep({ initialData, onSubmit }: BasicInfoStepProps) {
                   placeholder="Min (e.g., 80000)"
                   className={cn(
                     "w-full rounded-[12px] border px-4 py-2.5 text-sm text-navy placeholder:text-muted-foreground outline-none transition-colors",
-                    "focus:border-[#0099CC] focus:ring-2 focus:ring-[#0099CC]/20",
+                    "focus:border-violet-600 focus:ring-2 focus:ring-violet-600/20",
                     "border-border-default"
                   )}
                 />
@@ -459,7 +459,7 @@ export function BasicInfoStep({ initialData, onSubmit }: BasicInfoStepProps) {
                   placeholder="Max (e.g., 120000)"
                   className={cn(
                     "w-full rounded-[12px] border px-4 py-2.5 text-sm text-navy placeholder:text-muted-foreground outline-none transition-colors",
-                    "focus:border-[#0099CC] focus:ring-2 focus:ring-[#0099CC]/20",
+                    "focus:border-violet-600 focus:ring-2 focus:ring-violet-600/20",
                     "border-border-default"
                   )}
                 />
@@ -476,7 +476,7 @@ export function BasicInfoStep({ initialData, onSubmit }: BasicInfoStepProps) {
                   type="checkbox"
                   checked={formData.isAgency}
                   onChange={(e) => handleChange("isAgency", e.target.checked)}
-                  className="h-4 w-4 rounded border-border text-[#0099CC] focus:ring-[#0099CC]"
+                  className="h-4 w-4 rounded border-border text-violet-600 focus:ring-violet-600"
                 />
                 <div>
                   <span className="text-sm font-medium text-navy">
@@ -506,7 +506,7 @@ export function BasicInfoStep({ initialData, onSubmit }: BasicInfoStepProps) {
                       placeholder="e.g., Acme Corp"
                       className={cn(
                         "w-full rounded-[12px] border px-4 py-2.5 text-sm text-navy placeholder:text-muted-foreground outline-none transition-colors",
-                        "focus:border-[#0099CC] focus:ring-2 focus:ring-[#0099CC]/20",
+                        "focus:border-violet-600 focus:ring-2 focus:ring-violet-600/20",
                         errors.clientCompany ? "border-red-500" : "border-border-default"
                       )}
                       aria-invalid={!!errors.clientCompany}
@@ -526,7 +526,7 @@ export function BasicInfoStep({ initialData, onSubmit }: BasicInfoStepProps) {
                         onChange={(e) => handleChange("commissionType", e.target.value)}
                         className={cn(
                           "w-full rounded-[12px] border px-4 py-2.5 text-sm text-navy outline-none transition-colors appearance-none bg-white",
-                          "focus:border-[#0099CC] focus:ring-2 focus:ring-[#0099CC]/20",
+                          "focus:border-violet-600 focus:ring-2 focus:ring-violet-600/20",
                           "border-border-default",
                           !formData.commissionType && "text-muted-foreground"
                         )}
@@ -552,7 +552,7 @@ export function BasicInfoStep({ initialData, onSubmit }: BasicInfoStepProps) {
                           placeholder={formData.commissionType === "percentage" ? "e.g., 20" : "e.g., 15000"}
                           className={cn(
                             "w-full rounded-[12px] border px-4 py-2.5 text-sm text-navy placeholder:text-muted-foreground outline-none transition-colors",
-                            "focus:border-[#0099CC] focus:ring-2 focus:ring-[#0099CC]/20",
+                            "focus:border-violet-600 focus:ring-2 focus:ring-violet-600/20",
                             "border-border-default"
                           )}
                         />

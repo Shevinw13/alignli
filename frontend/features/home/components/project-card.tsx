@@ -61,7 +61,7 @@ export function ProjectCard({
       className={cn(
         "group relative block overflow-hidden rounded-[16px] border border-border bg-white",
         "shadow-sm hover:shadow-md transition-shadow duration-200",
-        "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0099CC]"
+        "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-600"
       )}
     >
       {/* Gradient top accent bar — thicker for visibility */}
@@ -71,7 +71,7 @@ export function ProjectCard({
         {/* Header row */}
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0 flex-1">
-            <h3 className="truncate text-[15px] font-semibold text-navy group-hover:text-[#0099CC] transition-colors">
+            <h3 className="truncate text-[15px] font-semibold text-navy group-hover:text-violet-600 transition-colors">
               {title}
             </h3>
             <div className="mt-2.5 flex items-center gap-3">
@@ -89,8 +89,8 @@ export function ProjectCard({
               )}
             </div>
           </div>
-          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gray-50 group-hover:bg-[#e6f7fc] transition-colors">
-            <ArrowRight className="h-3.5 w-3.5 text-gray-400 group-hover:text-[#0099CC] transition-colors" aria-hidden="true" />
+          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gray-50 group-hover:bg-violet-100 transition-colors">
+            <ArrowRight className="h-3.5 w-3.5 text-gray-400 group-hover:text-violet-600 transition-colors" aria-hidden="true" />
           </div>
         </div>
 
@@ -113,8 +113,8 @@ export function ProjectCard({
         {/* Next action hint (when no candidates yet) */}
         {hint && (
           <div className="mt-4 flex items-center gap-2 rounded-lg bg-[#f0fafb] px-3 py-2">
-            <hint.icon className="h-3.5 w-3.5 text-[#0099CC]" aria-hidden="true" />
-            <span className="text-xs text-[#006680]">{hint.text}</span>
+            <hint.icon className="h-3.5 w-3.5 text-violet-600" aria-hidden="true" />
+            <span className="text-xs text-violet-700">{hint.text}</span>
           </div>
         )}
       </div>

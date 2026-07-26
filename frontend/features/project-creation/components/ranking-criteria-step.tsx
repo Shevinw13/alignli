@@ -45,13 +45,13 @@ const MAX_CRITERIA = 12;
 const priorityStyles: Record<Priority, string> = {
   Low: "bg-gray-100 text-gray-700 border-gray-300",
   Medium: "bg-amber-50 text-amber-700 border-amber-300",
-  High: "bg-[#e6f7fc] text-[#0099CC] border-[#b3e0f0]",
+  High: "bg-violet-50 text-violet-600 border-violet-200",
 };
 
 const prioritySelectedStyles: Record<Priority, string> = {
   Low: "bg-gray-200 text-gray-900 border-gray-500 ring-1 ring-gray-400",
   Medium: "bg-amber-100 text-amber-900 border-amber-500 ring-1 ring-amber-400",
-  High: "bg-[#e6f7fc] text-[#006680] border-[#0099CC] ring-1 ring-[#0099CC]/40",
+  High: "bg-violet-50 text-violet-700 border-violet-600 ring-1 ring-violet-600/40",
 };
 
 const categoryColors: Record<CriteriaCategory, string> = {
@@ -164,7 +164,7 @@ function CriterionCard({
                 onClick={() => onPriorityChange(criterion.id, p)}
                 className={cn(
                   "rounded-md border px-2.5 py-1 text-xs font-medium transition-colors",
-                  "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0099CC]",
+                  "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-600",
                   criterion.priority === p
                     ? prioritySelectedStyles[p]
                     : priorityStyles[p]
@@ -224,7 +224,7 @@ function InlineAddForm({ onAdd, onCancel }: InlineAddFormProps) {
   return (
     <div
       className={cn(
-        "rounded-[16px] border-2 border-[#b3e0f0] bg-[#f0fafb]/50 p-4 space-y-4"
+        "rounded-[16px] border-2 border-violet-200 bg-violet-50/50 p-4 space-y-4"
       )}
       role="form"
       aria-label="Add custom criterion form"
@@ -239,7 +239,7 @@ function InlineAddForm({ onAdd, onCancel }: InlineAddFormProps) {
           className={cn(
             "rounded-md p-1.5 text-gray-400 transition-colors",
             "hover:bg-gray-100 hover:text-gray-600",
-            "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0099CC]"
+            "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-600"
           )}
           aria-label="Cancel adding criterion"
         >
@@ -263,7 +263,7 @@ function InlineAddForm({ onAdd, onCancel }: InlineAddFormProps) {
             onChange={(e) => setCategory(e.target.value as CriteriaCategory)}
             className={cn(
               "h-9 w-full rounded-md border border-border bg-white px-2 text-sm text-foreground",
-              "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0099CC]"
+              "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-600"
             )}
           >
             {CATEGORIES.map((cat) => (
@@ -294,7 +294,7 @@ function InlineAddForm({ onAdd, onCancel }: InlineAddFormProps) {
             className={cn(
               "h-9 w-full rounded-md border bg-white px-2 text-sm text-foreground",
               formError ? "border-red-300" : "border-border",
-              "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0099CC]"
+              "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-600"
             )}
           />
         </div>
@@ -316,7 +316,7 @@ function InlineAddForm({ onAdd, onCancel }: InlineAddFormProps) {
                 onClick={() => setPriority(p)}
                 className={cn(
                   "rounded-md border px-2.5 py-1 text-xs font-medium transition-colors",
-                  "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0099CC]",
+                  "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-600",
                   priority === p ? prioritySelectedStyles[p] : priorityStyles[p]
                 )}
                 aria-pressed={priority === p}
@@ -494,8 +494,8 @@ export function RankingCriteriaStep({
             "flex w-full items-center justify-center gap-2 rounded-[16px]",
             "border-2 border-dashed border-border bg-white py-4",
             "text-sm font-medium text-muted-foreground",
-            "transition-colors hover:border-[#0099CC]/40 hover:text-[#0099CC]",
-            "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0099CC]",
+            "transition-colors hover:border-violet-600/40 hover:text-violet-600",
+            "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-600",
             "disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:border-border disabled:hover:text-muted-foreground"
           )}
           aria-label="Add custom criterion"

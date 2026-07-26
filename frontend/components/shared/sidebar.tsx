@@ -13,7 +13,7 @@ interface NavItem {
 }
 
 const navItems: NavItem[] = [
-  { label: "Hiring Projects", href: "/", icon: FolderKanban },
+  { label: "Projects", href: "/", icon: FolderKanban },
   { label: "Settings", href: "/settings", icon: Settings },
   { label: "Account", href: "/account", icon: User },
 ];
@@ -31,12 +31,10 @@ export function Sidebar() {
     setCollapsed((prev) => !prev);
   }, []);
 
-  // Close mobile sidebar on route change
   useEffect(() => {
     setMobileOpen(false);
   }, [pathname]);
 
-  // Close mobile sidebar on Escape key
   useEffect(() => {
     if (!mobileOpen) return;
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -46,32 +44,27 @@ export function Sidebar() {
     return () => document.removeEventListener("keydown", handleKeyDown);
   }, [mobileOpen]);
 
-  // Auto-collapse on tablet viewports (768px–1024px)
   useEffect(() => {
     const mediaQuery = window.matchMedia("(min-width: 768px) and (max-width: 1024px)");
-
     function handleMediaChange(e: MediaQueryListEvent | MediaQueryList) {
       setCollapsed(e.matches);
     }
-
-    // Set initial state
     handleMediaChange(mediaQuery);
-
     mediaQuery.addEventListener("change", handleMediaChange);
     return () => mediaQuery.removeEventListener("change", handleMediaChange);
   }, []);
 
   return (
     <>
-      {/* Mobile hamburger button */}
+      {/* Mobile hamburger */}
       <button
         type="button"
         className={cn(
           "fixed top-4 left-4 z-50 lg:hidden",
-          "flex h-10 w-10 items-center justify-center rounded-[12px]",
-          "bg-white border border-border shadow-[0_2px_4px_rgba(0,0,0,0.05)]",
-          "text-navy interactive hover:bg-indigo-50",
-          "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+          "flex h-10 w-10 items-center justify-center rounded-xl",
+          "bg-white border border-gray-200 shadow-sm",
+          "text-gray-700 hover:bg-gray-50",
+          "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-500"
         )}
         onClick={toggleMobile}
         aria-label={mobileOpen ? "Close navigation menu" : "Open navigation menu"}
@@ -84,7 +77,7 @@ export function Sidebar() {
       {/* Mobile overlay */}
       {mobileOpen && (
         <div
-          className="fixed inset-0 z-40 bg-black/20 lg:hidden"
+          className="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm lg:hidden"
           onClick={() => setMobileOpen(false)}
           aria-hidden="true"
         />
@@ -95,8 +88,8 @@ export function Sidebar() {
         id="sidebar-nav"
         className={cn(
           "fixed inset-y-0 left-0 z-40 flex flex-col",
-          "bg-[#f0fafb] border-r border-[#d4eef2]",
-          "transition-all duration-[var(--duration-normal)] ease-[var(--ease-out)]",
+          "bg-[#0f0f14] border-r border-white/[0.06]",
+          "transition-all duration-200 ease-out",
           collapsed ? "w-16" : "w-56",
           mobileOpen ? "translate-x-0" : "-translate-x-full",
           "lg:translate-x-0"
@@ -104,34 +97,27 @@ export function Sidebar() {
         aria-label="Main navigation"
       >
         {/* Logo */}
-        <div className="flex h-16 items-center justify-between px-4">
+        <div className="flex h-14 items-center px-4">
           <Link
             href="/"
             className={cn(
-              "flex items-center gap-2.5 interactive",
+              "flex items-center gap-2.5",
               collapsed && "justify-center"
             )}
-            aria-label="BTS home"
+            aria-label="Narrowli home"
           >
-            <img src="/logo.jpeg" alt="BTS" width={36} height={36} className="h-9 w-9 shrink-0 rounded-lg" />
+            {/* Logo mark — abstract "N" shape */}
+            <img src="/narrowli.png" alt="Narrowli" width={32} height={32} className="h-8 w-8 shrink-0 rounded-lg" />
             {!collapsed && (
-              <div className="flex flex-col">
-                <span className="text-sm font-bold text-[#0f1623] leading-tight">
-                  BrightWell
-                </span>
-                <span className="text-[10px] font-medium text-[#0099CC] uppercase tracking-wider">
-                  Talent Solutions
-                </span>
-              </div>
+              <span className="text-[15px] font-semibold text-white tracking-tight">
+                Narrowli
+              </span>
             )}
           </Link>
         </div>
 
-        {/* Divider */}
-        <div className="mx-4 border-t border-[#d4eef2]" />
-
         {/* Navigation */}
-        <nav className="flex-1 px-3 py-4 space-y-1" aria-label="Sidebar navigation">
+        <nav className="flex-1 px-3 py-3 space-y-0.5" aria-label="Sidebar navigation">
           {navItems.map((item) => {
             const isActive =
               item.href === "/"
@@ -143,18 +129,18 @@ export function Sidebar() {
                 key={item.href}
                 href={item.href}
                 className={cn(
-                  "flex items-center gap-2.5 rounded-lg px-3 py-2.5",
-                  "text-sm font-medium interactive",
-                  "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0099CC]",
+                  "flex items-center gap-2.5 rounded-lg px-3 py-2",
+                  "text-sm font-medium transition-colors duration-150",
+                  "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-500",
                   isActive
-                    ? "bg-[#0099CC] text-white shadow-sm"
-                    : "text-[#3d5a5e] hover:bg-[#e0f4f7] hover:text-[#006680]",
+                    ? "bg-white/[0.08] text-white"
+                    : "text-gray-400 hover:bg-white/[0.04] hover:text-gray-200",
                   collapsed && "justify-center px-2"
                 )}
                 aria-current={isActive ? "page" : undefined}
                 title={collapsed ? item.label : undefined}
               >
-                <item.icon className={cn("h-[18px] w-[18px] shrink-0", isActive ? "text-white" : "text-[#5a9ba3]")} />
+                <item.icon className={cn("h-[18px] w-[18px] shrink-0", isActive ? "text-violet-400" : "text-gray-500")} />
                 {!collapsed && <span>{item.label}</span>}
               </Link>
             );
@@ -162,21 +148,21 @@ export function Sidebar() {
         </nav>
 
         {/* Collapse toggle */}
-        <div className="hidden lg:flex items-center justify-center border-t border-[#d4eef2] p-3">
+        <div className="hidden lg:flex items-center justify-center border-t border-white/[0.06] p-3">
           <button
             type="button"
             onClick={toggleCollapsed}
             className={cn(
-              "flex h-8 w-8 items-center justify-center rounded-[8px]",
-              "text-[#5a9ba3] interactive hover:bg-[#e0f4f7] hover:text-[#006680]",
-              "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0099CC]"
+              "flex h-7 w-7 items-center justify-center rounded-md",
+              "text-gray-500 hover:bg-white/[0.06] hover:text-gray-300",
+              "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-500"
             )}
             aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
           >
             {collapsed ? (
-              <ChevronsRight className="h-4 w-4" />
+              <ChevronsRight className="h-3.5 w-3.5" />
             ) : (
-              <ChevronsLeft className="h-4 w-4" />
+              <ChevronsLeft className="h-3.5 w-3.5" />
             )}
           </button>
         </div>

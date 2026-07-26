@@ -50,7 +50,7 @@ const MOCK_CANDIDATES: Candidate[] = [
 const MOCK_EMAIL_HISTORY: EmailHistoryEntry[] = [
   {
     id: "e1",
-    sender: "hiring@brightwell.io",
+    sender: "hiring@narrowli.com",
     recipient: "alice.johnson@example.com",
     subject: "Interview Invitation — Senior Software Engineer",
     sentAt: "2024-06-15T14:30:00Z",
@@ -58,7 +58,7 @@ const MOCK_EMAIL_HISTORY: EmailHistoryEntry[] = [
   },
   {
     id: "e2",
-    sender: "hiring@brightwell.io",
+    sender: "hiring@narrowli.com",
     recipient: "bob.williams@example.com",
     subject: "Next Steps in Your Application",
     sentAt: "2024-06-14T09:15:00Z",
@@ -66,7 +66,7 @@ const MOCK_EMAIL_HISTORY: EmailHistoryEntry[] = [
   },
   {
     id: "e3",
-    sender: "hiring@brightwell.io",
+    sender: "hiring@narrowli.com",
     recipient: "carlos.m@example.com",
     subject: "Schedule Confirmation",
     sentAt: "2024-06-13T16:45:00Z",
@@ -74,7 +74,7 @@ const MOCK_EMAIL_HISTORY: EmailHistoryEntry[] = [
   },
   {
     id: "e4",
-    sender: "hiring@brightwell.io",
+    sender: "hiring@narrowli.com",
     recipient: "diana.chen@example.com",
     subject: "Welcome to the Interview Process",
     sentAt: "2024-06-12T11:00:00Z",

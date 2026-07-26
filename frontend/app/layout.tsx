@@ -11,11 +11,11 @@ const plusJakartaSans = Plus_Jakarta_Sans({
 });
 
 export const metadata: Metadata = {
-  title: "BTS - BrightWell Talent Solutions",
+  title: "Narrowli — AI Hiring Copilot",
   description:
-    "AI-powered hiring copilot that helps hiring managers decide who deserves an interview.",
+    "AI-powered hiring copilot that ranks candidates against your criteria and shows you exactly why.",
   icons: {
-    icon: "/logo.jpeg",
+    icon: "/narrowli.png",
   },
 };
 

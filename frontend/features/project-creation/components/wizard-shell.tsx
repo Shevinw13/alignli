@@ -78,9 +78,9 @@ export function WizardShell({ currentStep, children, onNext }: WizardShellProps)
                     <div
                       className={cn(
                         "flex h-7 w-7 items-center justify-center rounded-full text-xs font-semibold transition-colors",
-                        isCompleted && "bg-[#0099CC] text-white",
+                        isCompleted && "bg-violet-600 text-white",
                         isCurrent &&
-                          "border-2 border-[#0099CC] bg-[#e6f7fc] text-[#0099CC]",
+                          "border-2 border-violet-600 bg-violet-100 text-violet-600",
                         isRemaining &&
                           "border-2 border-gray-200 bg-white text-gray-400"
                       )}
@@ -95,8 +95,8 @@ export function WizardShell({ currentStep, children, onNext }: WizardShellProps)
                     <span
                       className={cn(
                         "hidden text-xs font-medium sm:inline",
-                        isCompleted && "text-[#0099CC]",
-                        isCurrent && "text-[#0099CC] font-semibold",
+                        isCompleted && "text-violet-600",
+                        isCurrent && "text-violet-600 font-semibold",
                         isRemaining && "text-gray-400"
                       )}
                     >
@@ -109,7 +109,7 @@ export function WizardShell({ currentStep, children, onNext }: WizardShellProps)
                     <div
                       className={cn(
                         "hidden h-0.5 w-4 sm:block md:w-8",
-                        isCompleted ? "bg-[#0099CC]" : "bg-gray-200"
+                        isCompleted ? "bg-violet-600" : "bg-gray-200"
                       )}
                       aria-hidden="true"
                     />
@@ -156,7 +156,7 @@ export function WizardShell({ currentStep, children, onNext }: WizardShellProps)
             {!isLastStep && (
               <Button
                 onClick={handleNext}
-                className="bg-[#0099CC] text-white hover:bg-[#007aa3] px-5"
+                className="bg-violet-600 text-white hover:bg-violet-700 px-5"
               >
                 Continue
                 <ChevronRight className="h-4 w-4" data-icon="inline-end" />
