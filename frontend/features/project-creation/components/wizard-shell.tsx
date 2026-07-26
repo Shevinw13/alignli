@@ -55,7 +55,7 @@ export function WizardShell({ currentStep, children, onNext }: WizardShellProps)
     <div className="flex min-h-[calc(100vh-6rem)] flex-col">
       <div className="flex-1 space-y-8 pb-24">
         <div>
-          <h1 className="text-xl font-bold text-navy">New Opening</h1>
+          <h1 className="text-xl font-bold text-navy">New Job</h1>
           <p className="mt-0.5 text-xs text-muted-foreground">
             Step {currentStep} of {STEPS.length}
           </p>

@@ -1,7 +1,8 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
-import { Plus, FileText, Users, Sparkles } from "lucide-react";
+import { Plus, FileText, Users, Sparkles, CheckCircle2, MoreHorizontal } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { ProjectCard } from "@/features/home/components/project-card";
@@ -11,34 +12,39 @@ import { LoadingWrapper } from "@/components/shared/loading-wrapper";
 import { HomePageSkeleton } from "@/features/home/components/home-page-skeleton";
 import { NetworkErrorCard } from "@/components/shared/network-error-card";
 import { useProjects } from "@/lib/hooks";
-
-// ─── Page component ──────────────────────────────────────────────────────────
+import { transitionProjectState } from "@/lib/services/projects";
 
 export default function HomePage() {
   const { data, isLoading, error, refetch } = useProjects();
+  const [closingId, setClosingId] = useState<string | null>(null);
 
-  // Derive open vs closed projects from API response
   const projects = data?.items ?? [];
   const openProjects = projects
     .filter((p) => p.state !== "Filled" && p.state !== "Cancelled")
-    .sort(
-      (a, b) =>
-        new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime()
-    );
+    .sort((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime());
   const closedProjects = projects
     .filter((p) => p.state === "Filled" || p.state === "Cancelled")
-    .sort(
-      (a, b) =>
-        new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime()
-    );
+    .sort((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime());
 
   const hasProjects = openProjects.length > 0 || closedProjects.length > 0;
   const showGettingStarted = openProjects.length > 0 && openProjects.length <= 3;
 
+  async function handleMarkFilled(projectId: string) {
+    setClosingId(projectId);
+    try {
+      await transitionProjectState(projectId, "Filled");
+      refetch();
+    } catch (err) {
+      console.error("Failed to mark as filled:", err);
+    } finally {
+      setClosingId(null);
+    }
+  }
+
   if (error) {
     return (
       <NetworkErrorCard
-        title="Unable to load projects"
+        title="Unable to load jobs"
         description={error.message || "Please check your connection and try again."}
         onRetry={refetch}
       />
@@ -48,10 +54,8 @@ export default function HomePage() {
   return (
     <LoadingWrapper isLoading={isLoading} skeleton={<HomePageSkeleton />}>
       <div className="space-y-8">
-        {/* Empty state */}
         {!hasProjects && <EmptyState />}
 
-        {/* Dashboard with projects */}
         {hasProjects && (
           <>
             {/* Header banner */}
@@ -62,10 +66,10 @@ export default function HomePage() {
               <div className="relative flex items-center justify-between gap-4">
                 <div>
                   <h1 className="text-xl font-bold text-white tracking-tight">
-                    Your Hiring Dashboard
+                    Your Jobs
                   </h1>
                   <p className="mt-1 text-sm text-violet-200">
-                    {openProjects.length} active {openProjects.length === 1 ? "opening" : "openings"}{closedProjects.length > 0 ? ` · ${closedProjects.length} filled` : ""}
+                    {openProjects.length} active{closedProjects.length > 0 ? ` · ${closedProjects.length} filled` : ""}
                   </p>
                 </div>
                 <Button
@@ -77,12 +81,12 @@ export default function HomePage() {
                   render={<Link href="/projects/new" />}
                 >
                   <Plus className="h-4 w-4" aria-hidden="true" />
-                  New Opening
+                  New Job
                 </Button>
               </div>
             </div>
 
-            {/* How it works — shown when user is new (≤3 projects) */}
+            {/* How it works */}
             {showGettingStarted && (
               <section className="rounded-xl border border-violet-100/80 bg-white p-5 md:p-6">
                 <h3 className="text-sm font-semibold text-gray-900 tracking-tight">How it works</h3>
@@ -112,15 +116,12 @@ export default function HomePage() {
               </section>
             )}
 
-            {/* Open projects section */}
+            {/* Active jobs */}
             {openProjects.length > 0 && (
               <section aria-labelledby="open-projects-heading">
                 <div className="flex items-center gap-2 mb-4">
-                  <h2
-                    id="open-projects-heading"
-                    className="text-[15px] font-semibold text-gray-900"
-                  >
-                    Your Openings
+                  <h2 id="open-projects-heading" className="text-[15px] font-semibold text-gray-900">
+                    Active
                   </h2>
                   <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-violet-100 px-1.5 text-xs font-semibold text-violet-600">
                     {openProjects.length}
@@ -129,30 +130,48 @@ export default function HomePage() {
 
                 <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                   {openProjects.map((project) => (
-                    <ProjectCard
-                      key={project.id}
-                      id={project.id}
-                      title={project.title}
-                      status={project.state}
-                      candidateCount={0}
-                      topMatchesCount={0}
-                      updatedAt={project.updated_at}
-                    />
+                    <div key={project.id} className="relative group/card">
+                      <ProjectCard
+                        id={project.id}
+                        title={project.title}
+                        status={project.state}
+                        candidateCount={0}
+                        topMatchesCount={0}
+                        updatedAt={project.updated_at}
+                      />
+                      {/* Quick action: Mark as filled */}
+                      <button
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          handleMarkFilled(project.id);
+                        }}
+                        disabled={closingId === project.id}
+                        className={cn(
+                          "absolute top-3 right-3 z-10",
+                          "flex items-center gap-1 rounded-md px-2 py-1 text-[11px] font-medium",
+                          "bg-white/90 backdrop-blur-sm border border-gray-200 shadow-sm",
+                          "text-gray-500 hover:text-emerald-700 hover:border-emerald-200 hover:bg-emerald-50",
+                          "opacity-0 group-hover/card:opacity-100 transition-opacity",
+                          "focus-visible:opacity-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-500"
+                        )}
+                        aria-label={`Mark ${project.title} as filled`}
+                      >
+                        <CheckCircle2 className="h-3 w-3" />
+                        {closingId === project.id ? "..." : "Filled"}
+                      </button>
+                    </div>
                   ))}
                 </div>
               </section>
             )}
 
-            {/* Closed projects section */}
+            {/* Filled jobs */}
             {closedProjects.length > 0 && (
               <section aria-labelledby="closed-projects-heading">
-                <h2
-                  id="closed-projects-heading"
-                  className="text-base font-semibold text-navy mb-3"
-                >
-                  Completed
+                <h2 id="closed-projects-heading" className="text-[15px] font-semibold text-gray-400 mb-3">
+                  Filled
                 </h2>
-
                 <div className="space-y-2">
                   {closedProjects.map((project) => (
                     <ClosedProjectCard
@@ -192,7 +211,7 @@ function GettingStartedStep({
         <Icon className="h-4 w-4 text-violet-600" aria-hidden="true" />
       </div>
       <div className="min-w-0">
-        <p className="text-sm font-medium text-navy">{title}</p>
+        <p className="text-sm font-medium text-gray-900">{title}</p>
         <p className="mt-0.5 text-[11px] leading-relaxed text-gray-500">
           {description}
         </p>
