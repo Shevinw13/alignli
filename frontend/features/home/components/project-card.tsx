@@ -24,8 +24,8 @@ const statusConfig: Record<string, { bg: string; text: string; accent: string; d
 
 // Contextual next-action hints based on project state
 const nextActionHint: Record<string, { icon: typeof Upload; text: string }> = {
-  Draft: { icon: Upload, text: "Upload resumes to get started" },
-  Active: { icon: FileText, text: "Review candidates for this role" },
+  Draft: { icon: Upload, text: "Add resumes → get instant rankings" },
+  Active: { icon: FileText, text: "View your ranked candidates" },
 };
 
 function formatRelativeDate(dateStr?: string): string {

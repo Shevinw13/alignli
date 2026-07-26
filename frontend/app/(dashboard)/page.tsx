@@ -54,25 +54,25 @@ export default function HomePage() {
         {/* Dashboard with projects */}
         {hasProjects && (
           <>
-            {/* Compact header with gradient */}
-            <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-[#5B21B6] to-[#4338CA] p-5 md:p-6">
-              <div className="pointer-events-none absolute -right-16 -top-16 h-56 w-56 rounded-full bg-white/10 blur-3xl" />
-              <div className="pointer-events-none absolute bottom-0 left-1/3 h-24 w-24 rounded-full bg-violet-300/10 blur-2xl" />
+            {/* Header banner */}
+            <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-[#5B21B6] via-[#4C1D95] to-[#3730A3] p-6 md:p-7">
+              <div className="pointer-events-none absolute -right-12 -top-12 h-48 w-48 rounded-full bg-violet-400/20 blur-3xl" />
+              <div className="pointer-events-none absolute -bottom-6 left-1/4 h-32 w-32 rounded-full bg-indigo-400/10 blur-2xl" />
 
               <div className="relative flex items-center justify-between gap-4">
                 <div>
-                  <h1 className="text-lg font-bold text-white">
-                    Hiring Projects
+                  <h1 className="text-xl font-bold text-white tracking-tight">
+                    Your Hiring Dashboard
                   </h1>
-                  <p className="mt-0.5 text-sm text-white/70">
-                    {openProjects.length} active{closedProjects.length > 0 ? ` · ${closedProjects.length} completed` : ""}
+                  <p className="mt-1 text-sm text-violet-200">
+                    {openProjects.length} active {openProjects.length === 1 ? "role" : "roles"}{closedProjects.length > 0 ? ` · ${closedProjects.length} filled` : ""}
                   </p>
                 </div>
                 <Button
                   className={cn(
                     "inline-flex items-center gap-1.5",
-                    "bg-white text-[#5B21B6] hover:bg-white/90",
-                    "rounded-[10px] px-4 py-2.5 text-sm font-semibold shadow-sm"
+                    "bg-white text-[#5B21B6] hover:bg-violet-50",
+                    "rounded-lg px-5 py-2.5 text-sm font-semibold shadow-lg shadow-black/10"
                   )}
                   render={<Link href="/projects/new" />}
                 >
@@ -82,29 +82,29 @@ export default function HomePage() {
               </div>
             </div>
 
-            {/* Getting Started tips — shown when user is new (≤3 projects) */}
+            {/* How it works — shown when user is new (≤3 projects) */}
             {showGettingStarted && (
-              <section className="rounded-xl border border-violet-100 bg-gradient-to-br from-violet-50/50 to-white p-5 md:p-6">
-                <h3 className="text-sm font-semibold text-gray-900">How Narrowli works</h3>
-                <div className="mt-4 grid gap-3 sm:grid-cols-3">
+              <section className="rounded-xl border border-violet-100/80 bg-white p-5 md:p-6">
+                <h3 className="text-sm font-semibold text-gray-900 tracking-tight">How it works</h3>
+                <div className="mt-4 grid gap-4 sm:grid-cols-3">
                   <GettingStartedStep
                     number={1}
-                    title="Paste your job description"
-                    description=""
+                    title="Describe the role"
+                    description="Paste a job description or tell us what you're looking for"
                     icon={FileText}
                     done={false}
                   />
                   <GettingStartedStep
                     number={2}
-                    title="Upload candidate resumes"
-                    description=""
+                    title="Drop in resumes"
+                    description="Upload PDFs, paste text, or import from LinkedIn"
                     icon={Users}
                     done={false}
                   />
                   <GettingStartedStep
                     number={3}
-                    title="Interview with confidence"
-                    description=""
+                    title="See who's best"
+                    description="Ranked results with reasoning in under 60 seconds"
                     icon={Sparkles}
                     done={false}
                   />
@@ -118,9 +118,9 @@ export default function HomePage() {
                 <div className="flex items-center gap-2 mb-4">
                   <h2
                     id="open-projects-heading"
-                    className="text-base font-semibold text-navy"
+                    className="text-[15px] font-semibold text-gray-900"
                   >
-                    Active Projects
+                    Your Roles
                   </h2>
                   <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-violet-100 px-1.5 text-xs font-semibold text-violet-600">
                     {openProjects.length}
