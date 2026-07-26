@@ -78,6 +78,9 @@ function NewProjectWizard() {
   function handleShellNext() {
     if (currentStep === 1) {
       handleRoleSubmit();
+    } else if (currentStep === 2) {
+      // Trigger the upload step's continue logic
+      handleCandidatesContinue([]);
     } else {
       nextStep();
     }
