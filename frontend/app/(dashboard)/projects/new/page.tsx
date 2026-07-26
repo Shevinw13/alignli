@@ -10,8 +10,10 @@ import { cn } from "@/lib/utils";
 import { ChevronDown, ChevronRight, Upload, FileText } from "lucide-react";
 
 export default function NewProjectPage() {
+  // Force fresh state on every visit (prevents stale data from previous wizard sessions)
+  const [key] = useState(() => Date.now());
   return (
-    <WizardProvider>
+    <WizardProvider key={key} initialStep={1}>
       <NewProjectWizard />
     </WizardProvider>
   );
