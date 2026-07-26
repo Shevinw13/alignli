@@ -27,7 +27,7 @@ export default function HomePage() {
     .sort((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime());
 
   const hasProjects = openProjects.length > 0 || closedProjects.length > 0;
-  const showGettingStarted = openProjects.length > 0 && openProjects.length <= 3;
+  const showGettingStarted = projects.length <= 3;
 
   // Compute metrics (placeholder — will be powered by real API data)
   const totalCandidates = 0; // TODO: fetch from API
