@@ -1,9 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ChevronDown, ChevronRight, AlertTriangle, MessageSquare, Download, GitCompare } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { listCandidates } from "@/lib/services/candidates";
+import type { CandidateCard } from "@/lib/services/candidates";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -107,13 +109,86 @@ const DEMO_CANDIDATES: RankedCandidate[] = [
 
 interface RankedResultsProps {
   projectTitle: string;
+  projectId?: string;
   candidates?: RankedCandidate[];
 }
 
-export function RankedResults({ projectTitle, candidates = DEMO_CANDIDATES }: RankedResultsProps) {
+export function RankedResults({ projectTitle, projectId, candidates: propCandidates }: RankedResultsProps) {
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [compareIds, setCompareIds] = useState<Set<string>>(new Set());
   const [showCompare, setShowCompare] = useState(false);
+  const [candidates, setCandidates] = useState<RankedCandidate[]>(propCandidates || DEMO_CANDIDATES);
+  const [isLoading, setIsLoading] = useState(false);
+
+  // Fetch real candidates if projectId is provided
+  useEffect(() => {
+    if (!projectId) return;
+
+    async function fetchCandidates() {
+      setIsLoading(true);
+      try {
+        const response = await listCandidates(projectId!, { pageSize: 50 });
+        const items = response.data.items;
+
+        // Only use real data if there are scored candidates
+        const scoredCandidates = items.filter((c) => c.match_score != null);
+        if (scoredCandidates.length > 0) {
+          const mapped: RankedCandidate[] = scoredCandidates
+            .sort((a, b) => (b.match_score ?? 0) - (a.match_score ?? 0))
+            .map((c, index) => ({
+              id: c.id,
+              rank: index + 1,
+              name: c.full_name || `Candidate ${index + 1}`,
+              score: c.match_score ?? 0,
+              summary: c.summary || "No summary available",
+              strengths: [],
+              concerns: [],
+              redFlags: [],
+              interviewQuestions: [],
+              experience: c.years_experience ? `${c.years_experience} years` : "Unknown",
+              currentRole: c.current_company || undefined,
+            }));
+          setCandidates(mapped);
+
+          // Fetch full profiles for detailed data
+          fetchFullProfiles(scoredCandidates.map((c) => c.id));
+        }
+      } catch (err) {
+        console.error("Failed to fetch candidates:", err);
+        // Fall back to demo data (already set)
+      } finally {
+        setIsLoading(false);
+      }
+    }
+
+    async function fetchFullProfiles(ids: string[]) {
+      try {
+        const { getCandidateProfile } = await import("@/lib/services/candidates");
+        const profiles = await Promise.all(
+          ids.map((id) => getCandidateProfile(id).then((r) => r.data).catch(() => null))
+        );
+
+        setCandidates((prev) =>
+          prev.map((candidate) => {
+            const profile = profiles.find((p) => p?.id === candidate.id);
+            if (!profile) return candidate;
+            return {
+              ...candidate,
+              strengths: (profile.strengths as string[]) || candidate.strengths,
+              concerns: (profile.concerns as string[]) || candidate.concerns,
+              interviewQuestions: (profile.interview_questions as string[]) || candidate.interviewQuestions,
+              experience: profile.years_experience ? `${profile.years_experience} years` : candidate.experience,
+              currentRole: profile.current_company || candidate.currentRole,
+            };
+          })
+        );
+      } catch {
+        // Gracefully degrade — card view still works
+      }
+    }
+
+    fetchCandidates();
+  }, [projectId]);
 
   function toggleExpand(id: string) {
     setExpandedId(expandedId === id ? null : id);

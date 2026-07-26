@@ -109,9 +109,14 @@ export function Sidebar() {
             {/* Logo mark — abstract "N" shape */}
             <img src="/narrowli.png" alt="Narrowli" width={32} height={32} className="h-8 w-8 shrink-0 rounded-lg" />
             {!collapsed && (
-              <span className="text-[15px] font-semibold text-white tracking-tight">
-                Narrowli
-              </span>
+              <div className="flex flex-col">
+                <span className="text-[15px] font-semibold text-white tracking-tight">
+                  Narrowli
+                </span>
+                <span className="text-[10px] text-gray-500 leading-tight">
+                  60-second hiring decisions
+                </span>
+              </div>
             )}
           </Link>
         </div>

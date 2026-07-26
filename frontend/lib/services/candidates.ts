@@ -115,3 +115,26 @@ export function hireCandidate(
     `/api/v1/candidates/${candidateId}/hire`
   );
 }
+
+
+// ---------------------------------------------------------------------------
+// Analysis
+// ---------------------------------------------------------------------------
+
+export interface AnalyzeResponse {
+  analyzed: number;
+  total: number;
+  errors: Array<{ candidate_id: string; name: string; error: string }>;
+}
+
+/**
+ * Trigger AI analysis for all candidates in a project.
+ * Scores each candidate against the job description.
+ */
+export function analyzeProjectCandidates(
+  projectId: string
+): Promise<ApiResponse<AnalyzeResponse>> {
+  return api.post<AnalyzeResponse>(
+    `/api/v1/projects/${projectId}/analyze`
+  );
+}

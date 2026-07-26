@@ -4,6 +4,7 @@ Endpoints:
 - POST /api/v1/projects/{project_id}/extract-jd — Extract structured data from a job description
 - POST /api/v1/projects/{project_id}/generate-criteria — Generate ranking criteria from extracted JD
 - GET /api/v1/projects/{project_id}/brief — Generate AI Brief for a project
+- POST /api/v1/projects/{project_id}/analyze — Analyze and score all candidates
 
 Requirements: 4.1, 4.2, 4.3, 4.4, 5.1, 5.2, 9.2, 9.3, 9.4, 9.5
 """
@@ -280,3 +281,71 @@ async def generate_criteria(
         ) from e
 
     return GenerateCriteriaResponse(criteria=result.criteria)
+
+
+# --- Candidate Analysis ---
+
+
+class AnalyzeResponse(BaseModel):
+    """Response schema for the candidate analysis endpoint."""
+
+    analyzed: int = Field(description="Number of candidates successfully analyzed")
+    total: int = Field(description="Total number of candidates in the project")
+    errors: list[dict[str, Any]] = Field(
+        default_factory=list,
+        description="List of errors for candidates that failed analysis",
+    )
+
+
+@router.post(
+    "/projects/{project_id}/analyze",
+    response_model=AnalyzeResponse,
+    summary="Analyze and score all candidates for a project",
+    description=(
+        "Reads the project's job description, scores each candidate's resume "
+        "against it using AI, and stores results (score, summary, strengths, "
+        "concerns, interview questions) in the candidates table."
+    ),
+)
+async def analyze_project_candidates(
+    project_id: UUID,
+    user: AuthenticatedUser = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+) -> AnalyzeResponse:
+    """Analyze all candidates for a project against its job description.
+
+    For each candidate with available resume text, calls the AI to generate:
+    - Match score (0-100)
+    - 1-sentence summary
+    - Strengths array
+    - Concerns array
+    - Red flags
+    - 3-5 tailored interview questions
+
+    Results are persisted to the candidates table.
+    """
+    from app.core.database.session import get_current_org_id, set_current_org_id
+
+    if not get_current_org_id() and user.org_id:
+        set_current_org_id(user.org_id)
+
+    from app.features.ai.analyze import analyze_candidates
+
+    try:
+        result = await analyze_candidates(project_id=project_id, db=db)
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail={
+                "error": {
+                    "code": "NOT_FOUND",
+                    "message": str(e),
+                }
+            },
+        ) from e
+
+    return AnalyzeResponse(
+        analyzed=result.get("analyzed", 0),
+        total=result.get("total", 0),
+        errors=result.get("errors", []),
+    )

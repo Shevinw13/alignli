@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Loader2 } from "lucide-react";
+import { Loader2, CheckCircle2, AlertTriangle } from "lucide-react";
+import { analyzeProjectCandidates } from "@/lib/services/candidates";
 
 export interface ProcessingStepProps {
   projectId: string;
@@ -10,28 +11,40 @@ export interface ProcessingStepProps {
 }
 
 /**
- * Minimal, fast processing step.
- * Shows branded loader for ~3 seconds, then redirects home.
- * No fake multi-stage theater — respects the user's time.
+ * Processing step — calls the real AI analysis endpoint.
+ * Shows progress while analyzing, then redirects to project page.
  */
 export function ProcessingStep({ projectId }: ProcessingStepProps) {
-  const [status, setStatus] = useState<"analyzing" | "done">("analyzing");
-  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [status, setStatus] = useState<"analyzing" | "done" | "error">("analyzing");
+  const [errorMessage, setErrorMessage] = useState("");
+  const hasStarted = useRef(false);
 
   useEffect(() => {
-    // Simulate processing (real backend would use SSE)
-    // Keep it fast — 2.5 seconds max
-    timerRef.current = setTimeout(() => {
-      setStatus("done");
-      // Redirect after brief "done" flash
-      setTimeout(() => {
-        window.location.href = "/";
-      }, 800);
-    }, 2500);
+    if (!projectId || hasStarted.current) return;
+    hasStarted.current = true;
 
-    return () => {
-      if (timerRef.current) clearTimeout(timerRef.current);
-    };
+    async function runAnalysis() {
+      try {
+        await analyzeProjectCandidates(projectId);
+        setStatus("done");
+        // Redirect to the project page after a brief "done" flash
+        setTimeout(() => {
+          window.location.href = `/projects/${projectId}`;
+        }, 800);
+      } catch (err: unknown) {
+        console.error("Analysis failed:", err);
+        setStatus("error");
+        setErrorMessage(
+          err instanceof Error ? err.message : "Analysis failed. Your candidates were saved — you can retry from the project page."
+        );
+        // Still redirect after a delay so they can see their project
+        setTimeout(() => {
+          window.location.href = `/projects/${projectId}`;
+        }, 4000);
+      }
+    }
+
+    runAnalysis();
   }, [projectId]);
 
   return (
@@ -47,18 +60,40 @@ export function ProcessingStep({ projectId }: ProcessingStepProps) {
       </div>
 
       {/* Status text */}
-      <h2 className="text-lg font-semibold text-gray-900">
-        {status === "analyzing" ? "Analyzing candidates..." : "Done!"}
-      </h2>
-      <p className="mt-2 text-sm text-gray-500 max-w-xs">
-        {status === "analyzing"
-          ? "AI is reading resumes and scoring against your criteria"
-          : "Redirecting to your results..."}
-      </p>
-
-      {/* Spinner */}
       {status === "analyzing" && (
-        <Loader2 className="mt-6 h-5 w-5 animate-spin text-violet-500" aria-hidden="true" />
+        <>
+          <h2 className="text-lg font-semibold text-gray-900">
+            Ranking your candidates...
+          </h2>
+          <p className="mt-2 text-sm text-gray-500 max-w-xs">
+            Usually under 60 seconds
+          </p>
+          <Loader2 className="mt-6 h-5 w-5 animate-spin text-violet-500" aria-hidden="true" />
+        </>
+      )}
+
+      {status === "done" && (
+        <>
+          <h2 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+            <CheckCircle2 className="h-5 w-5 text-emerald-500" />
+            Done!
+          </h2>
+          <p className="mt-2 text-sm text-gray-500 max-w-xs">
+            Redirecting to your results...
+          </p>
+        </>
+      )}
+
+      {status === "error" && (
+        <>
+          <h2 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+            <AlertTriangle className="h-5 w-5 text-amber-500" />
+            Analysis issue
+          </h2>
+          <p className="mt-2 text-sm text-gray-500 max-w-xs">
+            {errorMessage || "Something went wrong. Redirecting to your project..."}
+          </p>
+        </>
       )}
     </div>
   );
