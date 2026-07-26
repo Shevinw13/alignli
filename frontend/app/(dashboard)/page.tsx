@@ -65,7 +65,7 @@ export default function HomePage() {
                     Your Hiring Dashboard
                   </h1>
                   <p className="mt-1 text-sm text-violet-200">
-                    {openProjects.length} active {openProjects.length === 1 ? "role" : "roles"}{closedProjects.length > 0 ? ` · ${closedProjects.length} filled` : ""}
+                    {openProjects.length} active {openProjects.length === 1 ? "opening" : "openings"}{closedProjects.length > 0 ? ` · ${closedProjects.length} filled` : ""}
                   </p>
                 </div>
                 <Button
@@ -77,7 +77,7 @@ export default function HomePage() {
                   render={<Link href="/projects/new" />}
                 >
                   <Plus className="h-4 w-4" aria-hidden="true" />
-                  New Project
+                  New Opening
                 </Button>
               </div>
             </div>
@@ -120,7 +120,7 @@ export default function HomePage() {
                     id="open-projects-heading"
                     className="text-[15px] font-semibold text-gray-900"
                   >
-                    Your Roles
+                    Your Openings
                   </h2>
                   <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-violet-100 px-1.5 text-xs font-semibold text-violet-600">
                     {openProjects.length}
