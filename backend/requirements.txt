@@ -1,5 +1,4 @@
 alembic==1.14.0
--e git+https://github.com/Shevinw13/alignli.git@2af1e41019b0a57270d2f3f7622cd1d61130123a#egg=alignli_backend&subdirectory=backend
 annotated-doc==0.0.4
 annotated-types==0.7.0
 anthropic==0.120.0
@@ -10,8 +9,7 @@ attrs==26.1.0
 certifi==2026.7.22
 cffi==2.0.0
 charset-normalizer==3.4.9
-click==8.1.8
-coverage==7.6.9
+click>=8.2.1
 cryptography==49.0.0
 Deprecated==1.3.1
 distro==1.9.0
@@ -27,7 +25,6 @@ httpcore==1.0.9
 httptools==0.8.0
 httpx==0.28.1
 huggingface_hub==1.8.0
-hypothesis==6.119.3
 idna==3.18
 iniconfig==2.1.0
 inngest==0.4.8
@@ -37,8 +34,6 @@ Mako==1.3.12
 markdown-it-py==3.0.0
 MarkupSafe==3.0.3
 mdurl==0.1.2
-mypy==1.13.0
-mypy_extensions==1.1.0
 packaging==26.2
 pluggy==1.6.0
 pycparser==2.23
@@ -48,8 +43,6 @@ pydantic_core==2.27.1
 Pygments==2.20.0
 PyJWT==2.9.0
 PyPDF2==3.0.1
-pytest==8.3.4
-pytest-asyncio==0.24.0
 python-dateutil==2.9.0.post0
 python-docx==1.2.0
 python-dotenv==1.2.1
@@ -58,7 +51,6 @@ PyYAML==6.0.3
 requests==2.32.5
 resend==2.4.0
 rich==15.0.0
-ruff==0.8.4
 shellingham==1.5.4
 six==1.17.0
 sniffio==1.3.1
@@ -71,8 +63,6 @@ tokenizers==0.22.2
 tomli==2.4.1
 tqdm==4.69.0
 typer==0.23.2
-types-Deprecated==1.3.1.20260130
-types-python-dateutil==2.9.0.20260124
 typing_extensions==4.16.0
 urllib3==2.6.3
 uvicorn==0.34.0
