@@ -112,16 +112,16 @@ function NewProjectWizard() {
     <WizardShell currentStep={currentStep} onNext={handleShellNext}>
       {/* ─── Step 1: About the Role ─── */}
       {currentStep === 1 && (
-        <div className="space-y-6">
+        <div className="space-y-8">
           <div>
-            <h2 className="text-lg font-semibold text-gray-900">About the role</h2>
-            <p className="mt-1 text-sm text-gray-500">
+            <h2 className="text-xl font-semibold text-gray-900">About the role</h2>
+            <p className="mt-2 text-sm text-gray-500">
               Tell us what you're hiring for. Paste a job description if you have one.
             </p>
           </div>
 
           {/* Title */}
-          <div className="space-y-1.5">
+          <div className="space-y-2">
             <label htmlFor="role-title" className="block text-sm font-medium text-gray-900">
               Role title <span className="text-red-500">*</span>
             </label>
@@ -132,7 +132,7 @@ function NewProjectWizard() {
               onChange={(e) => { setTitle(e.target.value); if (titleError) setTitleError(""); }}
               placeholder="e.g., Senior Software Engineer"
               className={cn(
-                "w-full rounded-xl border px-4 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 outline-none transition-colors",
+                "w-full rounded-xl border px-4 py-3 text-sm text-gray-900 placeholder:text-gray-400 outline-none transition-colors",
                 "focus:border-violet-500 focus:ring-2 focus:ring-violet-500/20",
                 titleError ? "border-red-400" : "border-gray-200"
               )}
@@ -142,7 +142,7 @@ function NewProjectWizard() {
           </div>
 
           {/* Job Description */}
-          <div className="space-y-1.5">
+          <div className="space-y-2">
             <label htmlFor="job-description" className="block text-sm font-medium text-gray-900">
               Job description
             </label>
@@ -194,7 +194,7 @@ function NewProjectWizard() {
 
             {showDetails && (
               <div className="mt-4 grid gap-4 sm:grid-cols-2">
-                <div className="space-y-1.5">
+                <div className="space-y-2">
                   <label htmlFor="company" className="block text-xs font-medium text-gray-600">Company / Organization</label>
                   <input
                     id="company"
@@ -205,7 +205,7 @@ function NewProjectWizard() {
                     className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 outline-none focus:border-violet-500 focus:ring-2 focus:ring-violet-500/20"
                   />
                 </div>
-                <div className="space-y-1.5">
+                <div className="space-y-2">
                   <label htmlFor="hiring-manager" className="block text-xs font-medium text-gray-600">Hiring Manager</label>
                   <input
                     id="hiring-manager"
@@ -216,7 +216,7 @@ function NewProjectWizard() {
                     className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 outline-none focus:border-violet-500 focus:ring-2 focus:ring-violet-500/20"
                   />
                 </div>
-                <div className="space-y-1.5">
+                <div className="space-y-2">
                   <label htmlFor="location" className="block text-xs font-medium text-gray-600">Location</label>
                   <input
                     id="location"
@@ -227,7 +227,7 @@ function NewProjectWizard() {
                     className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 outline-none focus:border-violet-500 focus:ring-2 focus:ring-violet-500/20"
                   />
                 </div>
-                <div className="space-y-1.5">
+                <div className="space-y-2">
                   <label htmlFor="emp-type" className="block text-xs font-medium text-gray-600">Employment type</label>
                   <select
                     id="emp-type"
