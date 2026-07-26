@@ -1,8 +1,8 @@
 "use client";
 
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useState } from "react";
-import { ArrowLeft, UserPlus, X } from "lucide-react";
+import { ArrowLeft, UserPlus, X, CheckCircle2 } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -14,13 +14,16 @@ import { RankedResults } from "@/features/hiring-project/components/ranked-resul
 import { ResumeUploadStep } from "@/features/project-creation/components/resume-upload-step";
 import { useProject } from "@/lib/hooks";
 import { analyzeProjectCandidates } from "@/lib/services/candidates";
+import { transitionProjectState } from "@/lib/services/projects";
 
 export default function ProjectDetailPage() {
   const params = useParams<{ id: string }>();
+  const router = useRouter();
   const { data: project, isLoading, error, refetch } = useProject(params.id);
   const [showUpload, setShowUpload] = useState(false);
   const [isReanalyzing, setIsReanalyzing] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
+  const [isClosing, setIsClosing] = useState(false);
 
   if (error) {
     return (
@@ -43,17 +46,27 @@ export default function ProjectDetailPage() {
   }
 
   async function handleUploadContinue(_files: File[]) {
-    // After upload, re-trigger analysis
     setShowUpload(false);
     setIsReanalyzing(true);
     try {
       await analyzeProjectCandidates(params.id);
-      // Force refresh of ranked results
       setRefreshKey((k) => k + 1);
     } catch (err) {
       console.error("Re-analysis failed:", err);
     } finally {
       setIsReanalyzing(false);
+    }
+  }
+
+  async function handleMarkFilled() {
+    if (!confirm("Mark this opening as filled? It will move to your completed section.")) return;
+    setIsClosing(true);
+    try {
+      await transitionProjectState(params.id, "Filled");
+      router.push("/");
+    } catch (err) {
+      console.error("Failed to close opening:", err);
+      setIsClosing(false);
     }
   }
 
@@ -92,9 +105,9 @@ export default function ProjectDetailPage() {
             </div>
           )}
 
-          {/* Add more candidates section */}
+          {/* Actions */}
           {!showUpload ? (
-            <div className="pt-2">
+            <div className="flex items-center gap-3 pt-2">
               <Button
                 onClick={() => setShowUpload(true)}
                 variant="outline"
@@ -103,6 +116,17 @@ export default function ProjectDetailPage() {
                 <UserPlus className="h-4 w-4" />
                 Add more candidates
               </Button>
+              {project.state !== "Filled" && (
+                <Button
+                  onClick={handleMarkFilled}
+                  variant="outline"
+                  disabled={isClosing}
+                  className="text-sm gap-2 text-emerald-700 border-emerald-200 hover:bg-emerald-50"
+                >
+                  <CheckCircle2 className="h-4 w-4" />
+                  {isClosing ? "Closing..." : "Mark as Filled"}
+                </Button>
+              )}
             </div>
           ) : (
             <div className="rounded-xl border border-gray-200 bg-white p-5 space-y-4">
