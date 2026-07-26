@@ -36,6 +36,31 @@ function generateId(): string {
   return `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
 }
 
+/**
+ * Parse a candidate's name from pasted text.
+ * Looks at the first non-empty line — typically the name in LinkedIn pastes.
+ */
+function parseCandidateName(text: string): string {
+  const lines = text.trim().split("\n");
+  for (const line of lines) {
+    const trimmed = line.trim();
+    // Skip empty lines
+    if (!trimmed) continue;
+    // A name is typically short (< 40 chars), doesn't start with common non-name patterns
+    if (
+      trimmed.length <= 40 &&
+      !trimmed.startsWith("http") &&
+      !trimmed.startsWith("About") &&
+      !trimmed.startsWith("Experience") &&
+      !trimmed.includes("@")
+    ) {
+      return trimmed;
+    }
+    break;
+  }
+  return "Unknown";
+}
+
 // --- Component ---
 
 export function ResumeUploadStep({ onContinue, projectId }: ResumeUploadStepProps) {
@@ -438,7 +463,7 @@ export function ResumeUploadStep({ onContinue, projectId }: ResumeUploadStepProp
                   <li key={i} className="flex items-center gap-3 rounded-lg border border-border px-3 py-2">
                     <FileText className="h-4 w-4 shrink-0 text-gray-400" aria-hidden="true" />
                     <span className="flex-1 truncate text-sm text-foreground">
-                      Candidate {i + 1} — {text.slice(0, 60)}...
+                      {parseCandidateName(text)}
                     </span>
                     <button
                       type="button"
@@ -500,7 +525,7 @@ export function ResumeUploadStep({ onContinue, projectId }: ResumeUploadStepProp
                   <li key={i} className="flex items-center gap-3 rounded-lg border border-border px-3 py-2">
                     <Link2 className="h-4 w-4 shrink-0 text-[#0A66C2]" aria-hidden="true" />
                     <span className="flex-1 truncate text-sm text-foreground">
-                      Profile {i + 1} — {text.slice(0, 60)}...
+                      {parseCandidateName(text)}
                     </span>
                     <button
                       type="button"
