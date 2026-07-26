@@ -7,7 +7,7 @@ import { ProcessingStep } from "@/features/project-creation/components/processin
 import { WizardProvider, useWizardContext } from "@/features/project-creation/wizard-context";
 import { createProject, type CreateProjectRequest } from "@/lib/services/projects";
 import { cn } from "@/lib/utils";
-import { ChevronDown, ChevronRight } from "lucide-react";
+import { ChevronDown, ChevronRight, Upload, FileText } from "lucide-react";
 
 export default function NewProjectPage() {
   return (
@@ -30,6 +30,26 @@ function NewProjectWizard() {
   const [company, setCompany] = useState("");
   const [hiringManager, setHiringManager] = useState("");
   const [titleError, setTitleError] = useState("");
+  const [jdFileName, setJdFileName] = useState("");
+
+  // Handle JD file upload — read text from .txt, .pdf (text only), .docx
+  function handleJDFileUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setJdFileName(file.name);
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const text = event.target?.result as string;
+      if (text) {
+        setJobDescription(text);
+      }
+    };
+    // Read as text (works for .txt, partially for others)
+    reader.readAsText(file);
+    // Reset input so same file can be re-selected
+    e.target.value = "";
+  }
 
   // Step 1 submit
   function handleRoleSubmit() {
@@ -138,9 +158,27 @@ function NewProjectWizard() {
                 "border-gray-200"
               )}
             />
-            <p className="text-xs text-gray-400">
-              The AI uses this to determine what matters most for scoring candidates.
-            </p>
+            <div className="flex items-center justify-between">
+              <p className="text-xs text-gray-400">
+                The AI uses this to determine what matters most for scoring candidates.
+              </p>
+              <label className="flex items-center gap-1.5 cursor-pointer text-xs font-medium text-violet-600 hover:text-violet-700">
+                <Upload className="h-3.5 w-3.5" />
+                Upload file
+                <input
+                  type="file"
+                  accept=".pdf,.docx,.txt"
+                  className="hidden"
+                  onChange={handleJDFileUpload}
+                />
+              </label>
+            </div>
+            {jdFileName && (
+              <p className="text-xs text-violet-600 flex items-center gap-1.5">
+                <FileText className="h-3.5 w-3.5" />
+                {jdFileName}
+              </p>
+            )}
           </div>
 
           {/* Optional details (collapsed) */}
