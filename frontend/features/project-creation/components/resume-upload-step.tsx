@@ -28,6 +28,8 @@ export interface ResumeUploadStepProps {
   onContinue: (data: { files: File[]; pastedTexts: string[]; linkedinTexts: string[] }) => void;
   /** Optional project ID for upload path association */
   projectId?: string;
+  /** Show a Continue/Process button inside the step */
+  showContinueButton?: boolean;
   /** Lifted state: pasted resumes controlled by parent */
   pastedResumes?: string[];
   /** Lifted state: setter for pasted resumes */
@@ -74,6 +76,7 @@ function parseCandidateName(text: string): string {
 export function ResumeUploadStep({
   onContinue,
   projectId,
+  showContinueButton = false,
   pastedResumes: controlledPastedResumes,
   onPastedResumesChange,
   linkedinTexts: controlledLinkedinTexts,
@@ -578,6 +581,17 @@ export function ResumeUploadStep({
             {linkedinUrls.length > 0 && `${linkedinUrls.length} LinkedIn`}
           </p>
         </div>
+      )}
+
+      {/* Process button (shown when used on project detail page) */}
+      {showContinueButton && totalCandidates > 0 && (
+        <Button
+          onClick={handleContinue}
+          disabled={!canContinue}
+          className="bg-violet-600 text-white hover:bg-violet-700 disabled:opacity-50 text-sm px-5 py-2.5 rounded-lg"
+        >
+          Analyze {totalCandidates} candidate{totalCandidates !== 1 ? "s" : ""}
+        </Button>
       )}
     </div>
   );

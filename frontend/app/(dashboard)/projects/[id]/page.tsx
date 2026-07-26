@@ -151,6 +151,7 @@ export default function ProjectDetailPage() {
               <ResumeUploadStep
                 onContinue={handleUploadContinue}
                 projectId={params.id}
+                showContinueButton
               />
             </div>
           )}
