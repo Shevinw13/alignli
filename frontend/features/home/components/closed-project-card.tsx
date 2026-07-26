@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowRight, RotateCcw } from "lucide-react";
+import { ArrowRight, RotateCcw, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export interface ClosedProjectCardProps {
@@ -9,6 +9,7 @@ export interface ClosedProjectCardProps {
   title: string;
   filledDate: string;
   onReopen?: (id: string) => void;
+  onDelete?: (id: string, title: string) => void;
 }
 
 export function ClosedProjectCard({
@@ -16,6 +17,7 @@ export function ClosedProjectCard({
   title,
   filledDate,
   onReopen,
+  onDelete,
 }: ClosedProjectCardProps) {
   const formattedDate = new Date(filledDate).toLocaleDateString("en-US", {
     month: "short",
@@ -40,6 +42,19 @@ export function ClosedProjectCard({
       </Link>
 
       <div className="flex items-center gap-2 shrink-0">
+        {onDelete && (
+          <button
+            onClick={(e) => { e.preventDefault(); onDelete(id, title); }}
+            className={cn(
+              "flex items-center gap-1 rounded-md px-2 py-1 text-[11px] font-medium",
+              "border border-gray-200 text-gray-400",
+              "hover:text-red-600 hover:border-red-200 hover:bg-red-50",
+              "opacity-0 group-hover:opacity-100 transition-opacity"
+            )}
+          >
+            <Trash2 className="h-3 w-3" />
+          </button>
+        )}
         {onReopen && (
           <button
             onClick={(e) => { e.preventDefault(); onReopen(id); }}

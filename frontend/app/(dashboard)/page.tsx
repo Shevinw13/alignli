@@ -236,6 +236,7 @@ export default function HomePage() {
                       title={project.title}
                       filledDate={project.updated_at}
                       onReopen={handleReopen}
+                      onDelete={handleDelete}
                     />
                   ))}
                 </div>
